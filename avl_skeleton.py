@@ -1,5 +1,5 @@
 # username - complete info
-#id1      - 206484750
+# id1      - 206484750
 # name1    - Guy Reuveni
 # id2      - complete info
 # name2    - complete info
@@ -9,7 +9,7 @@
 
 
 class AVLNode(object):
-    """Constructor, you are allowed to add more fields. 
+    """Constructor, you are allowed to add more fields.
 
     @type value: str
     @param value: data of your node
@@ -21,6 +21,7 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
+        self.size = 0  # Guy added it.
 
     """returns the left child
 	@rtype: AVLNode
@@ -28,7 +29,7 @@ class AVLNode(object):
 	"""
 
     def getLeft(self):
-        return None
+        return self.left
 
     """returns the right child
 
@@ -37,16 +38,16 @@ class AVLNode(object):
 	"""
 
     def getRight(self):
-        return None
+        return self.right
 
-    """returns the parent 
+    """returns the parent
 
 	@rtype: AVLNode
 	@returns: the parent of self, None if there is no parent
 	"""
 
     def getParent(self):
-        return None
+        return self.parent
 
     """return the value
 
@@ -55,7 +56,7 @@ class AVLNode(object):
 	"""
 
     def getValue(self):
-        return None
+        return self.value
 
     """returns the height
 
@@ -64,7 +65,16 @@ class AVLNode(object):
 	"""
 
     def getHeight(self):
-        return -1
+        return self.height
+
+    """returns the size
+
+	@rtype: int
+	@returns: the size of self, 0 if the node is virtual
+	"""
+
+    def getSize(self):  # Guy added it
+        return self.size
 
     """sets left child
 
@@ -73,7 +83,7 @@ class AVLNode(object):
 	"""
 
     def setLeft(self, node):
-        return None
+        self.left = node
 
     """sets right child
 
@@ -82,7 +92,7 @@ class AVLNode(object):
 	"""
 
     def setRight(self, node):
-        return None
+        self.right = node
 
     """sets parent
 
@@ -91,7 +101,7 @@ class AVLNode(object):
 	"""
 
     def setParent(self, node):
-        return None
+        self.parent = node
 
     """sets value
 
@@ -100,7 +110,7 @@ class AVLNode(object):
 	"""
 
     def setValue(self, value):
-        return None
+        self.value = value
 
     """sets the balance factor of the node
 
@@ -109,16 +119,27 @@ class AVLNode(object):
 	"""
 
     def setHeight(self, h):
-        return None
+        self.height = h
 
-    """returns whether self is not a virtual node 
+    """sets the size of the node
+
+	@type size: int
+	@param size: the size
+	"""
+
+    def setSize(self, size):  # Guy added this method
+        self.size = size
+
+    """returns whether self is not a virtual node
 
 	@rtype: bool
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 
     def isRealNode(self):
-        return False
+        if self.height == -1:
+            return False
+        return True
 
 
 """
@@ -129,13 +150,15 @@ A class implementing the ADT list, using an AVL tree.
 class AVLTreeList(object):
 
     """
-    Constructor, you are allowed to add more fields.  
+    Constructor, you are allowed to add more fields.
 
     """
 
     def __init__(self):
         self.root = None
-        # add your fields here
+        self.first = None
+        self.last = None
+        # we should consider adding a length field - Guy thinks that maybe we can be stasfied with the fact that we have a pointer to the root and root's size is the length of the list
 
     """returns whether the list is empty
 
@@ -143,7 +166,7 @@ class AVLTreeList(object):
 	@returns: True if the list is empty, False otherwise
 	"""
 
-    def empty(self):
+    def empty(self):  # better to be implented after we understand how we emter the first element to the list
         return None
 
     """retrieves the value of the i'th item in the list
@@ -191,7 +214,7 @@ class AVLTreeList(object):
 	"""
 
     def first(self):
-        return None
+        return self.first
 
     """returns the value of the last item in the list
 
@@ -200,9 +223,9 @@ class AVLTreeList(object):
 	"""
 
     def last(self):
-        return None
+        return self.last
 
-    """returns an array representing list 
+    """returns an array representing list
 
 	@rtype: list
 	@returns: a list of strings representing the data structure
@@ -211,16 +234,18 @@ class AVLTreeList(object):
     def listToArray(self):
         return None
 
-    """returns the size of the list 
+    """returns the size of the list
 
 	@rtype: int
 	@returns: the size of the list
 	"""
 
     def length(self):
-        return None
+        if self.empty():
+            return 0
+        return self.root.getSize()
 
-    """splits the list at the i'th index
+        """splits the list at the i'th index
 
 	@type i: int
 	@pre: 0 <= i < self.length()
@@ -262,4 +287,4 @@ class AVLTreeList(object):
 	"""
 
     def getRoot(self):
-        return None
+        return self.root
