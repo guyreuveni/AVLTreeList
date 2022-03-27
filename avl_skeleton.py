@@ -328,22 +328,42 @@ class AVLTreeList(object):
     # service methods
     """returns the i'th smallest node in the tree
 
-        @type i: int
-        @pre: 1 <= i <= self.length()
-        @param i: a position in the tree
-        @rtype: AVLNode
-        @returns: the i'th smallest node in the tree
-        """
+    @type i: int
+    @pre: 1 <= i <= self.length()
+    @param i: a position in the tree
+    @rtype: AVLNode
+    @returns: the i'th smallest node in the tree
+    @complexity: O(logi)
+    """
 
     def treeSelect(self, i):
-        curr = getRoot(self)
-        k = i
+        if i == 1:
+            return self.first
+        if i == self.length():
+            return self.last
+
+        curr = self.findSmallestSubTreeOfSize(i)
         r = curr.getLeft().getSize() + 1
-        while (k != r):
-            if k < r:               # the node is in the left tree so we need to loof for the k'th smallest node in the left tree
+        while (i != r):
+            if i < r:               # the node is in the left tree so we need to loof for the k'th smallest node in the left tree
                 curr = curr.getLeft()
-            else:                   # the node is in the right tree so we need to look for the k-r'th smallest node in the right tree
+            # the node is in the right tree so we need to look for the (k-r)'th smallest node in the right tree
+            else:
                 curr = curr.getRight()
-                k = k - r
+                k = i - r
             r = curr.getLeft().getSize() + 1
         return curr
+
+    """returns the smallest node in the tree whose subtree of size >= k
+
+    @type k: int
+    @pre: 1 <= k <= self.length()
+    @rtype: AVLNode
+    @returns: the smallest node off size >= k
+    @complexity: O(logk)
+    """
+
+    def findSmallestSubTreeOfSize(self, k):
+        curr = self.first
+        while (curr.getSize() < k):
+            curr = curr.parent
