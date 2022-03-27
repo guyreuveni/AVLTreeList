@@ -122,7 +122,7 @@ class AVLNode(object):
     def setValue(self, value):
         self.value = value
 
-    """sets the balance factor of the node
+    """sets the height of the node
 
 	@type h: int
 	@param h: the height
@@ -202,7 +202,7 @@ class AVLTreeList(object):
 	@returns: True if the list is empty, False otherwise
 	"""
 
-    def empty(self):  # better to be implented after we understand how we emter the first element to the list
+    def empty(self):  # better to be implented after we understand how we enter the first element to the list
         return None
 
     """retrieves the value of the i'th item in the list
@@ -240,9 +240,129 @@ class AVLTreeList(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 
+    # not handling mikrey kastze yet. need to implement successor and fixTreeAfterDeletion.
     def delete(self, i):
+        if i >= self.length():
+            return -1
+
+        nodeToBeDeleted = self.treeSelect(i+1)
+
+        if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
+            numOfBalancingOpps = deleteLeaf(nodeTobeDeleted)
+            return numOfBalancingOpps
+
+        elif not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
+            numOfBalancingOpps = deleteNodeWithRightChildOnly(nodeToBeDeleted)
+            return numOfBalancingOpps
+
+        elif not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
+            numOfBalancingOpps = deleteNodeWithLeftChildOnly(nodeToBeDeleted)
+            return numOfBalancingOpps
+
+        else:  # the node has two children
+            successor = self.getSuccessorOf(nodeToBeDeleted)
+            if successor.size == 1:
+                numOfBalancingOpps = deleteLeaf(successor)
+            else:
+                numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
+            parent = nodeToBeDeleted.getParent()
+            leftChild = nodeToBeDeleted.getLeft()
+            rightChild = nodeToBeDeleted.getRight()
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(successor)
+            else:
+                parent.setRight(successor)
+            successor.setParent(parent)
+            leftChild.setParent(successor)
+            successor.setLeft(leftChild)
+            rightChild.setParent(successor)
+            successor.setRight(rightChild)
+            return numOfBalancingOpps
+
         return -1
 
+        def deleteLeaf(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(nodeToBeDeleted.getLeft())
+            else:
+                parent.setRight(nodeToBeDeleted.getRight())
+            nodeToBeDeleted.setParent(None)
+            numOfBalancingOpps = fixTreeAfterDeletion(parent)
+            return numOfBalancingOpps
+
+        def deleteNodeWithRightChildOnly(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            child = nodeToBeDeleted.getRight()
+            child.setParent(parent)
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(child)
+            else:
+                parent.setRight(child)
+            nodeToBeDeleted.setParent(None)
+            nodeToBeDeleted.setRight(None)
+            numOfBalancingOpps = fixTreeAfterDeletion(parent)
+            return numOfBalancingOpps
+
+        def deleteNodeWithLeftChildOnly(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            child = nodeToBeDeleted.getLeft()
+            child.setParent(parent)
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(child)
+            else:
+                parent.setRight(child)
+            nodeToBeDeleted.setParent(None)
+            nodeToBeDeleted.setLeft(None)
+            numOfBalancingOpps = fixTreeAfterDeletion(parent)
+            return numOfBalancingOpps
+
+        def fixTreeAfterDeletion(node):
+            numOfBalancingOpps = 0
+            doneWithFixingHeight = False
+            while True:
+                node.setSize(node.getSize() - 1)
+                if not doneWithFixingHeight:
+                    BF = node.getBf()
+                    heightBefore = node.getHeight()
+                    heightAfter = 1 + \
+                        max(node.getLeft().getHeight(),
+                            node.getRight().getHeight())
+                    if abs(Bf) < 2 and heightAfter == heightBefore:
+                        doneWithFixingHeight = True
+
+                    elif abs(BF) < 2 and heightAfter != heightBefore:
+                        node.setHeight(heightAfter)
+                        numOfBalancingOpps += 1
+                    else:  # abs(BF) = 2
+                        if heightAfter != heightBefore:
+                            node.setHeight(heightAfter)
+                            numOfBalancingOpps += 1
+                        if BF == 2:
+                            BFL = node.getLeft().getBf()
+                            if BFL == 1 or BFL == 0:
+                                node.rightRotation()
+                                numOfBalancingOpps += 1
+                            elif BFL == - 1:
+                                node.leftRotatation()
+                                node.rightRotation()
+                                numOfBalancingOpps += 2
+                        else:  # BF = -2
+                            BFR = node.getRight().getBf()
+                            if BFR == -1 or BFR == 0:
+                                node.leftRotatation()
+                                numOfBalancingOpps += 1
+                            elif BFR == 1:
+                                node.rightRotation()
+                                node.leftRotatation()
+                                numOfBalancingOpps += 2
+
+                node = node.getParent()
+
+                if node == self.getRoot():
+                    break
+
+            return numOfBalancingOpps
     """returns the value of the first item in the list
 
 	@rtype: str
@@ -345,12 +465,13 @@ class AVLTreeList(object):
         curr = self.findSmallestSubTreeOfSize(i)
         r = curr.getLeft().getSize() + 1
         while (i != r):
-            if i < r:               # the node is in the left tree so we need to loof for the k'th smallest node in the left tree
+            if i < r:               # the node is in the left tree so we need to loof for the i'th smallest node in the left tree
                 curr = curr.getLeft()
-            # the node is in the right tree so we need to look for the (k-r)'th smallest node in the right tree
+
+            # the node is in the right tree so we need to look for the (i-r)'th smallest node in the right tree
             else:
                 curr = curr.getRight()
-                k = i - r
+                i = i - r
             r = curr.getLeft().getSize() + 1
         return curr
 
@@ -368,3 +489,39 @@ class AVLTreeList(object):
         while (curr.getSize() < k):
             curr = curr.getParent()
         return curr
+
+    """returns the successor of a given node
+
+    @type node: AVLNode
+	@rtype: AVLNode
+	@returns: the successor of a given node. if the node is the Maximum returns None
+    complexity: O(logn)
+	"""
+
+    def getSuccessorOf(self, node):
+        if self.last == node:
+            return None
+
+        if node.getRight().isRealNode():
+            curr = node.getRight()
+            while curr.isRealNode():
+                curr = curr.getLeft()
+            return curr
+
+        curr = node.getParent()
+        while curr.isRealNode and curr.getRight() == node:
+            node = curr
+            curr = curr.getParent()
+        return curr
+
+    # """increases by 1 the size of all the node which are in the path from node to the root
+
+        # @rtype: int
+        # @returns: the size of the list
+        # """
+
+    # def increaseSizeByOneAllTheWayUpFrom(self, node):
+    #     while True:
+    #         node.setSize(node.getSize() + 1)
+    #         if node == self.getRoot():
+    #             break
