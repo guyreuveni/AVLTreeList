@@ -202,7 +202,7 @@ class AVLTreeList(object):
 	@returns: True if the list is empty, False otherwise
 	"""
 
-    def empty(self):  # better to be implented after we understand how we emter the first element to the list
+    def empty(self):  # better to be implented after we understand how we enter the first element to the list
         return None
 
     """retrieves the value of the i'th item in the list
@@ -240,8 +240,75 @@ class AVLTreeList(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 
+    # not handling mikrey kastze yet. need to implement successor and fixTreeAfterDeletion.
     def delete(self, i):
+        if i >= self.length():
+            return -1
+
+        nodeToBeDeleted = self.treeSelect(i+1)
+
+        if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
+            deleteLeaf(nodeTobeDeleted)
+
+        elif not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
+            deleteNodeWithRightChildOnly(nodeToBeDeleted)
+
+        elif not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
+            deleteNodeWithLeftChildOnly(nodeToBeDeleted)
+
+        else:  # the node has two children
+            successor = self.getSuccessorOf(nodeToBeDeleted)
+            if successor.size == 1:
+                deleteLeaf(successor)
+            else:
+                deleteNodeWithRightChildOnly(successor)
+            parent = nodeToBeDeleted.getParent()
+            leftChild = nodeToBeDeleted.getLeft()
+            rightChild = nodeToBeDeleted.getRight()
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(successor)
+            else:
+                parent.setRight(successor)
+            successor.setParent(parent)
+            leftChild.setParent(successor)
+            successor.setLeft(leftChild)
+            rightChild.setParent(successor)
+            successor.setRight(rightChild)
+
         return -1
+
+        def deleteLeaf(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(nodeToBeDeleted.getLeft())
+            else:
+                parent.setRight(nodeToBeDeleted.getRight())
+            nodeToBeDeleted.setParent(None)
+            self.fixTreeAfterDeletion(parent)
+
+        def deleteNodeWithRightChildOnly(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            child = nodeToBeDeleted.getRight()
+            child.setParent(parent)
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(child)
+            else:
+                parent.setRight(child)
+            nodeToBeDeleted.setParent(None)
+            nodeToBeDeleted.setRight(None)
+            self.fixTreeAfterDeletion(parent)
+
+        def deleteNodeWithLeftChildOnly(nodeToBeDeleted):
+            parent = nodeToBeDeleted.getParent()
+            child = nodeToBeDeleted.getLeft()
+            child.setParent(parent)
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(child)
+            else:
+                parent.setRight(child)
+            nodeToBeDeleted.setParent(None)
+            nodeToBeDeleted.setLeft(None)
+            self.fixTreeAfterDeletion(parent)
 
     """returns the value of the first item in the list
 
@@ -347,6 +414,7 @@ class AVLTreeList(object):
         while (i != r):
             if i < r:               # the node is in the left tree so we need to loof for the k'th smallest node in the left tree
                 curr = curr.getLeft()
+
             # the node is in the right tree so we need to look for the (k-r)'th smallest node in the right tree
             else:
                 curr = curr.getRight()
@@ -366,5 +434,28 @@ class AVLTreeList(object):
     def findSmallestSubTreeOfSize(self, k):
         curr = self.first
         while (curr.getSize() < k):
+            curr = curr.getParent()
+        return curr
+
+    """returns the successor of a given node
+
+    @type node: AVLNode
+	@rtype: AVLNode
+	@returns: the successor of a given node. if the node is the Maximum returns None
+	"""
+
+    def getSuccessorOf(self, node):
+        if self.last == node:
+            return None
+
+        if node.getRight().isRealNode():
+            curr = node.getRight()
+            while curr.isRealNode():
+                curr = curr.getLeft()
+            return curr
+
+        curr = node.getParent()
+        while curr.isRealNode and curr.getRight() == node:
+            node = curr
             curr = curr.getParent()
         return curr
