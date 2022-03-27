@@ -366,5 +366,5 @@ class AVLTreeList(object):
     def findSmallestSubTreeOfSize(self, k):
         curr = self.first
         while (curr.getSize() < k):
-            curr = curr.parent
+            curr = curr.getParent()
         return curr
