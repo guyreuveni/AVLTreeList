@@ -367,3 +367,4 @@ class AVLTreeList(object):
         curr = self.first
         while (curr.getSize() < k):
             curr = curr.parent
+        return curr
