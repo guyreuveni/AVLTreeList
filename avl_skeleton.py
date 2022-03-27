@@ -76,6 +76,16 @@ class AVLNode(object):
     def getSize(self):  # Guy added it
         return self.size
 
+    """returns the balnce factor
+
+	@rtype: int
+	@returns: the balance factor of self
+	"""
+
+    # Guy added it. noe sure what to return if the node is virtual.
+    def getBf(self):
+        return self.left.getHeight() - self.right.getHeight()
+
     """sets left child
 
 	@type node: AVLNode
@@ -129,6 +139,32 @@ class AVLNode(object):
 
     def setSize(self, size):  # Guy added this method
         self.size = size
+
+    """given that self is an AVL criminal with BF = +2 and its left son has BF = +1,
+    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
+	"""
+
+    def rightRotation(self):  # not handling the root problem yet
+        B = self
+        parent = B.getParent()
+        A = B.getLeft()
+        if parent.getLeft() == B:
+            parent.setLeft(A)
+        else:
+            parent.setRight(A)
+        A.setParent(parent)
+        B.setParent(A)
+        B.setLeft(A.getRight())
+        A.setRight(B)
+        B.getLeft().setParent(B)
+
+        # fixing height field off A and B, the only nodes whose height was changed
+        A.setHeight(1 + max(A.left.getHeight() + A.right.getHeight()))
+        B.setHeight(1 + max(B.left.getHeight() + B.right.getHeight()))
+
+        # fixing size field off A and B, the only nodes whose size was changed
+        A.setSize(B.size)
+        B.setSize(1 + B.left.getSize() + B.right.getSize())
 
     """returns whether self is not a virtual node
 
@@ -214,7 +250,7 @@ class AVLTreeList(object):
 	"""
 
     def first(self):
-        return self.first
+        return self.first.getValue()
 
     """returns the value of the last item in the list
 
@@ -223,7 +259,7 @@ class AVLTreeList(object):
 	"""
 
     def last(self):
-        return self.last
+        return self.last.getValue()
 
     """returns an array representing list
 
@@ -243,9 +279,9 @@ class AVLTreeList(object):
     def length(self):
         if self.empty():
             return 0
-        return self.root.getSize()
+        return getRoot(self).getSize()
 
-        """splits the list at the i'th index
+    """splits the list at the i'th index
 
 	@type i: int
 	@pre: 0 <= i < self.length()
@@ -288,3 +324,5 @@ class AVLTreeList(object):
 
     def getRoot(self):
         return self.root
+
+    # service methods
