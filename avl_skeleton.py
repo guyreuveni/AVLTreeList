@@ -240,7 +240,7 @@ class AVLTreeList(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 
-    # not handling mikrey kastze yet. need to implement successor and fixTreeAfterDeletion.
+    # not handling mikrey kastze yet.
     def delete(self, i):
         if i >= self.length():
             return -1
