@@ -163,7 +163,7 @@ class AVLNode(object):
         B.setHeight(1 + max(B.left.getHeight() + B.right.getHeight()))
 
         # fixing size field off A and B, the only nodes whose size was changed
-        A.setSize(B.size)
+        A.setSize(B.getSize())
         B.setSize(1 + B.left.getSize() + B.right.getSize())
 
     """returns whether self is not a virtual node
