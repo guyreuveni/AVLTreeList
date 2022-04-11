@@ -157,12 +157,11 @@ class AVLNode(object):
         self.size = size
 
     """updates node height by computing it from childrens' height
-        and returns 1 as the number of balancing operations that has been done
+        and returns the number of balancing operations that has been done
      """
 
     def updateHeight(self):
         self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
-        return 1 
 
     
     "updates node size by computing it from childrens' size"
@@ -196,14 +195,6 @@ class AVLNode(object):
         A.updateSize()
         B.updateSize()
 
-
-    # fixing height field off A and B, the only nodes whose height was changed
-    A.updateHeight()
-    B.updateHeight()
-
-    # fixing size field off A and B, the only nodes whose size was changed
-    A.updateSize()
-    B.updateSize()
 
 
 
@@ -355,21 +346,22 @@ def leftRotation(self, node):
         """
 
         def fixAfterInsertion(self, node):
-            numOfBalancingOp = 0
-            numOfBalancingOp += node.updateHeight()
+            node.updateHeight()
             node.updateSize()
             curr = node.getParent()
+            numOfBalancingOp = 0 
 
             while curr != None:
                 curr.updateSize()
                 prevHeight = curr.getHeight()
-                numOfBalancingOp += curr.updateHeight()
+                curr.updateHeight()
 
                 if abs(curr.getBf()) < 2:
                     if prevHeight == curr.getHeight():
                         return (curr, numOfBalancingOp)
                     else:
                         curr = curr.getParent()
+                        numOfBalancingOp += 1
                 
                 else:
                     numOfBalancingOp += self.insertRotate(node)
