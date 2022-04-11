@@ -156,9 +156,7 @@ class AVLNode(object):
     def setSize(self, size):  # Guy added this method
         self.size = size
 
-    """updates node height by computing it from childrens' height
-        and returns the number of balancing operations that has been done
-     """
+    """updates node height by computing it from childrens' height """
 
     def updateHeight(self):
         self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
@@ -243,11 +241,12 @@ class AVLTreeList(object):
 	@pre: 0 <= i < self.length()
 	@param i: index in the list
 	@rtype: str
-	@returns: the the value of the i'th item in the list
+	@returns: the the value of the i'th item in the list. 
+                unless i is not a legal index on this list, then the return value would be None 
 	"""
 
     def retrieve(self, i):
-        if i > 0 or i >= self.length():
+        if i < 0 or i >= self.length():
             return None
         else:
             return self.treeSelect(i+1).getValue()
@@ -284,7 +283,7 @@ def leftRotation(self, node):
     def insert(self, i, val):
         newNode = AVLNode(val)
         if i == 0: #inserting the minimum
-            if not self.first.isRealNode(): #inserting the root
+            if self.empty(): #inserting the root
                 self.root = (newNode)
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
@@ -334,14 +333,14 @@ def leftRotation(self, node):
             newLeaf.completeSetRight(virtualSon)
             newLeaf.completeSetLeft(AVLNode())
         
-        """travers from the inserted node to tree's root, while looking for criminal AVL subtree
+        """travels from the inserted node to tree's root, while looking for criminal AVL subtree
         for every node checked, it updates it size and height.
         if there is no potential AVL criminal subtrees, it will stop and return
         
         @type node: AVLNode
         @param node: inserted node
         return value: tuple
-        returns: tuple which its first object is the last node ir checked
+        returns: tuple which its first object is the last node it checked
                  and second object is number of rebalancing operations that has been done
         """
 
