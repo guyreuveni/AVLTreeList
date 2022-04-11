@@ -14,7 +14,7 @@ class AVLNode(object):
     @param value: data of your node
     """
 
-    def __init__(self, value):
+    def __init__(self, value = None):
         self.value = value
         self.left = None
         self.right = None
@@ -72,16 +72,16 @@ class AVLNode(object):
 	@returns: the size of self, 0 if the node is virtual
 	"""
 
-    def getSize(self):  # Guy added it
+    def getSize(self):
         return self.size
 
     """returns the balnce factor
 
+    @pre: self is a real node 
 	@rtype: int
 	@returns: the balance factor of self
 	"""
 
-    # Guy added it. noe sure what to return if the node is virtual.
     def getBf(self):
         return self.left.getHeight() - self.right.getHeight()
 
@@ -104,22 +104,22 @@ class AVLNode(object):
         self.right = node
 
     """ sets right child and also sets right child's parent
-        @type node: AVLnode
-        @param node: a node
+        @type child: AVLnode
+        @param child: a node
      """
 
-    def completeSetRight(self, node):
-        self.setRight(node)
-        node.setParent(self)
+    def completeSetRight(self, child):
+        self.setRight(child)
+        child.setParent(self)
 
     """ sets left child and also sets right child's parent
-        @type node: AVLnode
-        @param node: a node
+        @type child: AVLnode
+        @param child: a node
      """
 
-    def completeSetLeft(self, node):
-        self.setLeft(node)
-        node.setParent(self)
+    def completeSetLeft(self, child):
+        self.setLeft(child)
+        child.setParent(self)
 
     """sets parent
 
@@ -157,73 +157,15 @@ class AVLNode(object):
     def setSize(self, size):  # Guy added this method
         self.size = size
 
-    """updates node height by computing it from childrens' height
-        and returns 1 as the number of balancing operations that has been done
-     """
+    """updates node height by computing it from childrens' height """
 
     def updateHeight(self):
-        self.setHeight(max(self.getRight().getHeight(),
-                           self.getLeft().getHeight()) + 1)
-        return 1
+        self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
 
     "updates node size by computing it from childrens' size"
 
     def updateSize(self):
         self.setSize(self.getRight().getSize() + self.getLeft.GetSize() + 1)
-
-    """given that self is an AVL criminal with BF = +2 and its left son has BF = +1,
-    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
-	"""
-
-    def rightRotation(self):  # not handling the root problem yet
-        B = self
-        parent = B.getParent()
-        A = B.getLeft()
-        if parent.getLeft() == B:
-            parent.setLeft(A)
-        else:
-            parent.setRight(A)
-        A.setParent(parent)
-        B.setParent(A)
-        B.setLeft(A.getRight())
-        A.setRight(B)
-        B.getLeft().setParent(B)
-
-        # fixing height field off A and B, the only nodes whose height was changed
-        A.updateHeight()
-        B.updateHeight()
-
-        # fixing size field off A and B, the only nodes whose size was changed
-        A.updateSize()
-        B.updateSize()
-
-
-"""given that self is an AVL criminal with BF = -2 and its right son has BF = -1,
-    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
-	"""
-
-
-def leftRotation(self):
-    B = self
-    parent = B.getParent()
-    A = B.getRight()
-    if parent.getLeft() == B:
-        parent.setLeft(A)
-    else:
-        parent.setRight(A)
-    A.setParent(parent)
-    B.setRight(A.getLeft())
-    A.setLeft(B)
-    B.getRight().setParent(B)
-    B.setParent(A)
-
-    # fixing height field off A and B, the only nodes whose height was changed
-    A.updateHeight()
-    B.updateHeight()
-
-    # fixing size field off A and B, the only nodes whose size was changed
-    A.updateSize()
-    B.updateSize()
 
     """returns whether self is not a virtual node
 
@@ -254,19 +196,16 @@ class AVLTreeList(object):
         self.first = None
         self.last = None
 
-    """ returns list length by getting its' root's size """
-
-    def getLength(self):
-        return self.getRoot().getSize()
-
     """returns whether the list is empty
 
 	@rtype: bool
 	@returns: True if the list is empty, False otherwise
 	"""
 
-    def empty(self):  # better to be implented after we understand how we enter the first element to the list
-        return None
+    def empty(self):
+        if self.root == None:
+            return True
+        return False
 
     """retrieves the value of the i'th item in the list
 
@@ -274,11 +213,15 @@ class AVLTreeList(object):
 	@pre: 0 <= i < self.length()
 	@param i: index in the list
 	@rtype: str
-	@returns: the the value of the i'th item in the list
+	@returns: the the value of the i'th item in the list. 
+                unless i is not a legal index on this list, then the return value would be None 
 	"""
 
     def retrieve(self, i):
-        return self.treeSelect(i+1).getValue()
+        if i < 0 or i >= self.length():
+            return None
+        else:
+            return self.treeSelect(i+1).getValue()
 
     """inserts val at position i in the list
 
@@ -293,17 +236,20 @@ class AVLTreeList(object):
 
     def insert(self, i, val):
         newNode = AVLNode(val)
-        if i == 0:  # inserting the minimum
-            if not self.getFirst().isRealNode():  # inserting the root
-                self.setRoot(newNode)
+        if i == 0: #inserting the minimum
+            if self.empty(): #inserting the root
+                self.root = (newNode)
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
+                self.last = newNode 
 
             else:
-                self.insertLeaf(self.getFirst, newNode, "left")
+                self.insertLeaf(self.first,newNode,"left")
+            self.first = newNode
 
-        elif i == self.getLength():  # inserting the maximum
-            self.insertLeaf(self.getLast(), newNode, "right")
+        elif i == self.length(): #inserting the maximum 
+            self.insertLeaf(self.last,newNode,"right")
+            self.last = newNode
 
         else:
             curr = self.treeSelect(i+1)
@@ -318,7 +264,7 @@ class AVLTreeList(object):
 
         return numOfBalancingOp
 
-    """inserts node as a leaf without making any height or size adjustments.
+        """inserts node as a leaf without making any height or size adjustments.
         the adjustments will be done in main insert function
         
         @type currLeaf: AVLNode
@@ -330,76 +276,79 @@ class AVLTreeList(object):
         @pre: direction = "left" or direction = "right"
         """
 
-    def insertLeaf(self, currLeaf, newLeaf, direction):
-        if direction == "right":  # insert newLeaf as right son of currLeaf
-            virtualSon = currLeaf.getRight()
-            currLeaf.completeSetRight(newLeaf)
-        else:  # insert newLeaf as left son of currLeaf
-            virtualSon = currLeaf.getLeft()
-            currLeaf.completeSetLeft(newLeaf)
 
-        newLeaf.completeSetRight(virtualSon)
-        newLeaf.completeSetLeft(AVLNode())
-
-    """travers from the inserted node to tree's root, while looking for criminal AVL subtree
+        def insertLeaf(self, currLeaf, newLeaf, direction):
+            if direction == "right": #insert newLeaf as right son of currLeaf
+                virtualSon = currLeaf.getRight()
+                currLeaf.completeSetRight(newLeaf)
+            else: #insert newLeaf as left son of currLeaf
+                virtualSon = currLeaf.getLeft()
+                currLeaf.completeSetLeft(newLeaf)
+            
+            newLeaf.completeSetRight(virtualSon)
+            newLeaf.completeSetLeft(AVLNode())
+        
+        """travels from the inserted node to tree's root, while looking for criminal AVL subtree
         for every node checked, it updates it size and height.
         if there is no potential AVL criminal subtrees, it will stop and return
         
         @type node: AVLNode
         @param node: inserted node
         return value: tuple
-        returns: tuple which its first object is the last node ir checked
+        returns: tuple which its first object is the last node it checked
                  and second object is number of rebalancing operations that has been done
-    """
+        """
 
-    def fixAfterInsertion(self, node):
-        numOfBalancingOp += node.updateHeight()
-        node.updateSize()
-        curr = node.getParent()
+        def fixAfterInsertion(self, node):
+            node.updateHeight()
+            node.updateSize()
+            curr = node.getParent()
+            numOfBalancingOp = 0 
 
-        while curr != None:
-            curr.updateSize()
-            prevHeight = curr.getHeight()
-            numOfBalancingOp += curr.updateHeight()
-            bf = curr.getBf()
+            while curr != None:
+                curr.updateSize()
+                prevHeight = curr.getHeight()
+                curr.updateHeight()
 
-            if abs(bf) < 2:
-                if prevHeight == curr.getHeight():
-                    return (curr, numOfBalancingOp)
+                if abs(curr.getBf()) < 2:
+                    if prevHeight == curr.getHeight():
+                        return (curr, numOfBalancingOp)
+                    else:
+                        curr = curr.getParent()
+                        numOfBalancingOp += 1
+                
                 else:
-                    curr = curr.getParent()
+                    numOfBalancingOp += self.insertRotate(node)
+                    return (curr, numOfBalancingOp)
 
+            return (curr, numOfBalancingOp)
+          
+          
+        """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
+            @type node: AVLNode
+            @param node: the root of the AVL criminal subtree
+            return: int 
+            returns: number of rebalancing operation that has been done
+        """
+        
+        def insertRotate(self,node):
+            if node.getBf() == -2:
+                if node.getRight().getBf() == -1:
+                    self.leftRotation(node)
+                    return 1 
+                else:
+                    self.rightRotation(node)
+                    self.leftRotation(node) 
+                    return 2 
+            
             else:
-                numOfBalancingOp += self.insertRotate(node)
-                return (curr, numOfBalancingOp)
-
-        return (curr, numOfBalancingOp)
-
-    """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
-        @type node: AVLNode
-        @param node: the root of the AVL criminal subtree
-        return: int 
-        returns: number of rebalancing operation that has been done
-    """
-
-    def insertRotate(self, node):
-        if node.getBf() == -2:
-            if node.getRight().getBf() == -1:
-                node.leftRotate()
-                return 1
-            else:
-                node.rightRotate()
-                node.leftRotate()  # I'm not sure this is correct
-                return 2
-
-        else:
-            if node.getLeft().getBf() == 1:
-                node.rightRotate()
-                return 1
-            else:
-                node.leftRotate()
-                node.rightRotate()
-                return 2
+                if node.getLeft().getBf() == 1:
+                    self.rightRotation(node)
+                    return 1 
+                else:
+                    self.leftRotation(node)
+                    self.rightRotation(node)
+                    return 2
 
     """deletes the i'th item in the list
 
@@ -416,6 +365,16 @@ class AVLTreeList(object):
             return -1
 
         nodeToBeDeleted = self.treeSelect(i+1)
+
+        if i == 0:  # updating first becaus deleting the first item in the list
+            self.first = self.getSuccessorOf(nodeToBeDeleted)
+
+        if i == self.length() - 1:  # updating last because deleting the last item in the list
+            self.last = self.getPredecessorOf(nodeToBeDelted)
+
+        if self.length() == 1:  # there is only one item in the list and we are deleting it
+            self.root = None
+            return 0
 
         if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
             numOfBalancingOpps = deleteLeaf(nodeTobeDeleted)
@@ -435,28 +394,29 @@ class AVLTreeList(object):
                 numOfBalancingOpps = deleteLeaf(successor)
             else:
                 numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
+
+            # putting the successor in nodeToBeDeleted place
             parent = nodeToBeDeleted.getParent()
             leftChild = nodeToBeDeleted.getLeft()
             rightChild = nodeToBeDeleted.getRight()
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(successor)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(successor)
+                else:
+                    parent.setRight(successor)
             else:
-                parent.setRight(successor)
+                self.root = successor
             successor.setParent(parent)
-            leftChild.setParent(successor)
-            successor.setLeft(leftChild)
-            rightChild.setParent(successor)
-            successor.setRight(rightChild)
+            successor.completeSetLeft(leftChild)
+            successor.completeSetRight(rightChild)
             return numOfBalancingOpps
-
-        return -1
 
         def deleteLeaf(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
             if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(nodeToBeDeleted.getLeft())
+                parent.completeSetLeft(nodeToBeDeleted.getLeft())
             else:
-                parent.setRight(nodeToBeDeleted.getRight())
+                parent.completeSetRight(nodeToBeDeleted.getRight())
             nodeToBeDeleted.setParent(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
             return numOfBalancingOpps
@@ -465,10 +425,14 @@ class AVLTreeList(object):
             parent = nodeToBeDeleted.getParent()
             child = nodeToBeDeleted.getRight()
             child.setParent(parent)
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(child)
-            else:
-                parent.setRight(child)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(child)
+                else:
+                    parent.setRight(child)
+            else:  # the nodeToBeDeleted is the root and it has only right child, that means that there are only two nodes in the tree, and now the right child becomes the root.
+                self.root = child
+
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setRight(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
@@ -478,10 +442,14 @@ class AVLTreeList(object):
             parent = nodeToBeDeleted.getParent()
             child = nodeToBeDeleted.getLeft()
             child.setParent(parent)
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(child)
-            else:
-                parent.setRight(child)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(child)
+                else:
+                    parent.setRight(child)
+            else:  # the nodeToBeDeleted is the root and it has only left child, that means that there are only two nodes in the tree, and now the left child becomes the root.
+                self.root = child
+
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setLeft(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
@@ -490,7 +458,7 @@ class AVLTreeList(object):
         def fixTreeAfterDeletion(node):
             numOfBalancingOpps = 0
             doneWithFixingHeight = False
-            while True:
+            while node != None:
                 node.setSize(node.getSize() - 1)
                 if not doneWithFixingHeight:
                     BF = node.getBf()
@@ -507,32 +475,29 @@ class AVLTreeList(object):
                     else:  # abs(BF) = 2
                         if heightAfter != heightBefore:
                             node.setHeight(heightAfter)
-                            numOfBalancingOpps += 1
                         if BF == 2:
                             BFL = node.getLeft().getBf()
                             if BFL == 1 or BFL == 0:
-                                node.rightRotation()
+                                self.rightRotation(node)
                                 numOfBalancingOpps += 1
                             elif BFL == - 1:
-                                node.leftRotation()
-                                node.rightRotation()
+                                self.leftRotation(node)
+                                self.rightRotation(node)
                                 numOfBalancingOpps += 2
                         else:  # BF = -2
                             BFR = node.getRight().getBf()
                             if BFR == -1 or BFR == 0:
-                                node.leftRotatation()
+                                self.leftRotatation(node)
                                 numOfBalancingOpps += 1
                             elif BFR == 1:
-                                node.rightRotation()
-                                node.leftRotatation()
+                                self.rightRotation(node)
+                                self.leftRotatation(node)
                                 numOfBalancingOpps += 2
 
                 node = node.getParent()
 
-                if node == self.getRoot():
-                    break
-
             return numOfBalancingOpps
+
     """returns the value of the first item in the list
 
 	@rtype: str
@@ -540,6 +505,8 @@ class AVLTreeList(object):
 	"""
 
     def first(self):
+        if self.empty():
+            return None
         return self.first.getValue()
 
     """returns the value of the last item in the list
@@ -549,6 +516,8 @@ class AVLTreeList(object):
 	"""
 
     def last(self):
+        if self.empty():
+            return None
         return self.last.getValue()
 
     """returns an array representing list
@@ -616,6 +585,7 @@ class AVLTreeList(object):
         return self.root
 
     # service methods
+
     """returns the i'th smallest node in the tree
 
     @type i: int
@@ -692,8 +662,9 @@ class AVLTreeList(object):
     complexity: O(logn)
 	"""
 
-    def getPredecessorOf(self, node):
-        if node == self.getFirst():
+
+    def getPredecessorOf (self, node):
+        if node == self.first():
             return None
         if node.getLeft().isRealNode():
             curr = node.getLeft()
@@ -709,14 +680,14 @@ class AVLTreeList(object):
 
     """increases by 1 the size of all the node which are in the path from node to the root
 
-         @rtype: int
-         @returns: the size of the list
+         @type node: AVLNode
     """
 
     def increaseSizeByOneAllTheWayUpFrom(self, node):
         while (node != None):
             node.setSize(node.getSize() + 1)
             node = node.getParent
+
 
     # print tree functions
 
@@ -794,3 +765,59 @@ class AVLTreeList(object):
         while row[i] == " ":
             i += 1
         return i
+
+    """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
+    fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+	"""
+
+    def rightRotation(self, node):  # not handling the root problem yet
+        B = node
+        parent = B.getParent()
+        A = B.getLeft()
+        if parent != None:  # if B is the root then parent == None
+            if parent.getLeft() == B:
+                parent.setLeft(A)
+            else:
+                parent.setRight(A)
+        else:
+            self.root = A
+        A.setParent(parent)
+        B.setParent(A)
+        B.setLeft(A.getRight())
+        A.setRight(B)
+        B.getLeft().setParent(B)
+
+        # fixing height field off A and B, the only nodes whose height was changed
+        A.updateHeight()
+        B.updateHeight()
+
+        # fixing size field off A and B, the only nodes whose size was changed
+        A.updateSize()
+        B.updateSize()
+        
+      """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
+    fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+	"""
+def leftRotation(self, node):
+    B = node
+    parent = B.getParent()
+    A = B.getRight()
+    if parent == None:
+        self.root = A
+        A.setParent(None)
+    else:
+        if parent.getLeft() == B:
+            parent.completeSetLeft(A)
+        else:
+            parent.completeSetRight(A)
+    B.completeSetRight(A.getLeft())
+    A.completeSetLeft(B)
+    
+    # fixing height field off A and B, the only nodes whose height was changed
+    A.updateHeight()
+    B.updateHeight()
+
+    # fixing size field off A and B, the only nodes whose size was changed
+    A.updateSize()
+    B.updateSize()
+
