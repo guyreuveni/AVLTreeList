@@ -14,7 +14,7 @@ class AVLNode(object):
     @param value: data of your node
     """
 
-    def __init__(self, value):
+    def __init__(self, value = None):
         self.value = value
         self.left = None
         self.right = None
@@ -156,13 +156,10 @@ class AVLNode(object):
     def setSize(self, size):  # Guy added this method
         self.size = size
 
-    """updates node height by computing it from childrens' height
-        and returns 1 as the number of balancing operations that has been done
-     """
+    """updates node height by computing it from childrens' height """
 
     def updateHeight(self):
         self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
-        return 1 
 
     
     "updates node size by computing it from childrens' size"
@@ -196,30 +193,6 @@ class AVLNode(object):
         A.updateSize()
         B.updateSize()
 
-"""given that self is an AVL criminal with BF = -2 and its right son has BF = -1,
-    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
-	"""
-def leftRotation(self):
-    B = self
-    parent = B.getParent()
-    A = B.getRight()
-    if parent.getLeft() == B:
-        parent.setLeft(A)
-    else:
-        parent.setRight(A)
-    A.setParent(parent)
-    B.setRight(A.getLeft())
-    A.setLeft(B)
-    B.getRight().setParent(B)
-    B.setParent(A)
-
-    # fixing height field off A and B, the only nodes whose height was changed
-    A.updateHeight()
-    B.updateHeight()
-
-    # fixing size field off A and B, the only nodes whose size was changed
-    A.updateSize()
-    B.updateSize()
 
 
 
@@ -253,11 +226,6 @@ class AVLTreeList(object):
         self.first = None
         self.last = None
 
-    """ returns list length by getting its' root's size """
-    
-    def getLength(self):
-        return self.getRoot().getSize()
-
     """returns whether the list is empty
 
 	@rtype: bool
@@ -273,11 +241,33 @@ class AVLTreeList(object):
 	@pre: 0 <= i < self.length()
 	@param i: index in the list
 	@rtype: str
-	@returns: the the value of the i'th item in the list
+	@returns: the the value of the i'th item in the list. 
+                unless i is not a legal index on this list, then the return value would be None 
 	"""
 
     def retrieve(self, i):
-        return self.treeSelect(i+1).getValue()
+        if i < 0 or i >= self.length():
+            return None
+        else:
+            return self.treeSelect(i+1).getValue()
+    
+    """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
+    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
+	"""
+def leftRotation(self, node):
+    B = node
+    parent = B.getParent()
+    A = B.getRight()
+    if parent == None:
+        self.root = A
+        A.setParent(None)
+    else:
+        if parent.getLeft() == B:
+            parent.completeSetLeft(A)
+        else:
+            parent.completeSetRight(A)
+    B.completeSetRight(A.getLeft())
+    A.completeSetLeft(B)
 
     """inserts val at position i in the list
 
@@ -293,16 +283,19 @@ class AVLTreeList(object):
     def insert(self, i, val):
         newNode = AVLNode(val)
         if i == 0: #inserting the minimum
-            if not self.getFirst().isRealNode(): #inserting the root
-                self.setRoot(newNode)
+            if self.empty(): #inserting the root
+                self.root = (newNode)
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
+                self.last = newNode 
 
             else:
-                self.insertLeaf(self.getFirst,newNode,"left")
+                self.insertLeaf(self.first,newNode,"left")
+            self.first = newNode
 
-        elif i == self.getLength(): #inserting the maximum 
-            self.insertLeaf(self.getLast(),newNode,"right")
+        elif i == self.length(): #inserting the maximum 
+            self.insertLeaf(self.last,newNode,"right")
+            self.last = newNode
 
         else: 
             curr = self.treeSelect(i+1)
@@ -317,7 +310,7 @@ class AVLTreeList(object):
 
         return numOfBalancingOp
 
-    """inserts node as a leaf without making any height or size adjustments.
+        """inserts node as a leaf without making any height or size adjustments.
         the adjustments will be done in main insert function
         
         @type currLeaf: AVLNode
@@ -329,77 +322,81 @@ class AVLTreeList(object):
         @pre: direction = "left" or direction = "right"
         """
 
-    def insertLeaf(self, currLeaf, newLeaf, direction):
-        if direction == "right": #insert newLeaf as right son of currLeaf
-            virtualSon = currLeaf.getRight()
-            currLeaf.completeSetRight(newLeaf)
-        else: #insert newLeaf as left son of currLeaf
-            virtualSon = currLeaf.getLeft()
-            currLeaf.completeSetLeft(newLeaf)
+        def insertLeaf(self, currLeaf, newLeaf, direction):
+            if direction == "right": #insert newLeaf as right son of currLeaf
+                virtualSon = currLeaf.getRight()
+                currLeaf.completeSetRight(newLeaf)
+            else: #insert newLeaf as left son of currLeaf
+                virtualSon = currLeaf.getLeft()
+                currLeaf.completeSetLeft(newLeaf)
+            
+            newLeaf.completeSetRight(virtualSon)
+            newLeaf.completeSetLeft(AVLNode())
         
-        newLeaf.completeSetRight(virtualSon)
-        newLeaf.completeSetLeft(AVLNode())
-        
-    """travers from the inserted node to tree's root, while looking for criminal AVL subtree
+        """travels from the inserted node to tree's root, while looking for criminal AVL subtree
         for every node checked, it updates it size and height.
         if there is no potential AVL criminal subtrees, it will stop and return
         
         @type node: AVLNode
         @param node: inserted node
         return value: tuple
-        returns: tuple which its first object is the last node ir checked
+        returns: tuple which its first object is the last node it checked
                  and second object is number of rebalancing operations that has been done
-    """
+        """
 
-    def fixAfterInsertion(self, node):
-        numOfBalancingOp += node.updateHeight()
-        node.updateSize()
-        curr = node.getParent()
+        def fixAfterInsertion(self, node):
+            node.updateHeight()
+            node.updateSize()
+            curr = node.getParent()
+            numOfBalancingOp = 0 
 
-        while curr != None:
-            curr.updateSize()
-            prevHeight = curr.getHeight()
-            numOfBalancingOp += curr.updateHeight()
-            bf = curr.getBf()
+            while curr != None:
+                curr.updateSize()
+                prevHeight = curr.getHeight()
+                curr.updateHeight()
 
-            if abs(bf) < 2:
-                if prevHeight == curr.getHeight():
-                    return (curr, numOfBalancingOp)
+                if abs(curr.getBf()) < 2:
+                    if prevHeight == curr.getHeight():
+                        return (curr, numOfBalancingOp)
+                    else:
+                        curr = curr.getParent()
+                        numOfBalancingOp += 1
+                
                 else:
-                    curr = curr.getParent()
+                    numOfBalancingOp += self.insertRotate(node)
+                    return (curr, numOfBalancingOp)
+
+            return (curr, numOfBalancingOp)
+
+        """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
+            @type node: AVLNode
+            @param node: the root of the AVL criminal subtree
+            return: int 
+            returns: number of rebalancing operation that has been done
+        """
+        
+        def insertRotate(self,node):
+            if node.getBf() == -2:
+                if node.getRight().getBf() == -1:
+                    self.leftRotation(node)
+                    return 1 
+                else:
+                    self.rightRotation(node)
+                    self.leftRotation(node) 
+                    return 2 
             
             else:
-                numOfBalancingOp += self.insertRotate(node)
-                return (curr, numOfBalancingOp)
-
-        return (curr, numOfBalancingOp)
-
-    """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
-        @type node: AVLNode
-        @param node: the root of the AVL criminal subtree
-        return: int 
-        returns: number of rebalancing operation that has been done
-    """
-    
-    def insertRotate(self,node):
-        if node.getBf() == -2:
-            if node.getRight().getBf() == -1:
-                node.leftRotate()
-                return 1 
-            else:
-                node.rightRotate()
-                node.leftRotate() #I'm not sure this is correct
-                return 2 
-        
-        else:
-            if node.getLeft().getBf() == 1:
-                node.rightRotate()
-                return 1 
-            else:
-                node.leftRotate()
-                node.rightRotate()
-                return 2
+                if node.getLeft().getBf() == 1:
+                    self.rightRotation(node)
+                    return 1 
+                else:
+                    self.leftRotation(node)
+                    self.rightRotation(node)
+                    return 2
                 
+    
+        
+    
 
 
     """deletes the i'th item in the list
@@ -694,7 +691,7 @@ class AVLTreeList(object):
 	"""
 
     def getPredecessorOf (self, node):
-        if node == self.getFirst():
+        if node == self.first():
             return None
         if node.getLeft().isRealNode():
             curr = node.getLeft()
