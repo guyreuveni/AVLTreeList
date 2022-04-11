@@ -1,9 +1,8 @@
 # username - complete info
 # id1      - 206484750
 # name1    - Guy Reuveni
-# id2      - complete info
-# name2    - complete info
-
+# id2      - 206388969
+# name2    - Ofek Kasif
 
 """A class represnting a node in an AVL tree"""
 
@@ -21,7 +20,7 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
-        self.size = 0  # Guy added it.
+        self.size = 0 
 
     """returns the left child
 	@rtype: AVLNode
@@ -104,6 +103,23 @@ class AVLNode(object):
     def setRight(self, node):
         self.right = node
 
+    """ sets right child and also sets right child's parent
+        @type node: AVLnode
+        @param node: a node
+     """
+    def completeSetRight(self, node):
+        self.setRight(node)
+        node.setParent(self)
+
+    """ sets left child and also sets right child's parent
+        @type node: AVLnode
+        @param node: a node
+     """
+
+    def completeSetLeft(self,node):
+        self.setLeft(node)
+        node.setParent(self)
+
     """sets parent
 
 	@type node: AVLNode
@@ -140,6 +156,20 @@ class AVLNode(object):
     def setSize(self, size):  # Guy added this method
         self.size = size
 
+    """updates node height by computing it from childrens' height
+        and returns 1 as the number of balancing operations that has been done
+     """
+
+    def updateHeight(self):
+        self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
+        return 1 
+
+    
+    "updates node size by computing it from childrens' size"
+
+    def updateSize(self):
+        self.setSize(self.getRight().getSize() + self.getLeft.GetSize() + 1)
+
     """given that self is an AVL criminal with BF = +2 and its left son has BF = +1,
     fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
 	"""
@@ -159,14 +189,40 @@ class AVLNode(object):
         B.getLeft().setParent(B)
 
         # fixing height field off A and B, the only nodes whose height was changed
-        A.setHeight(1 + max(A.getLeft().getHeight() +
-                            A.getRight().getHeight()))
-        B.setHeight(1 + max(B.getLeft().getHeight() +
-                            B.getRight().getHeight()))
+        A.updateHeight()
+        B.updateHeight()
 
         # fixing size field off A and B, the only nodes whose size was changed
-        A.setSize(B.getSize())
-        B.setSize(1 + B.getLeft().getSize() + B.getRight().getSize())
+        A.updateSize()
+        B.updateSize()
+
+"""given that self is an AVL criminal with BF = -2 and its right son has BF = -1,
+    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
+	"""
+def leftRotation(self):
+    B = self
+    parent = B.getParent()
+    A = B.getRight()
+    if parent.getLeft() == B:
+        parent.setLeft(A)
+    else:
+        parent.setRight(A)
+    A.setParent(parent)
+    B.setRight(A.getLeft())
+    A.setLeft(B)
+    B.getRight().setParent(B)
+    B.setParent(A)
+
+    # fixing height field off A and B, the only nodes whose height was changed
+    A.updateHeight()
+    B.updateHeight()
+
+    # fixing size field off A and B, the only nodes whose size was changed
+    A.updateSize()
+    B.updateSize()
+
+
+
 
     """returns whether self is not a virtual node
 
@@ -196,7 +252,11 @@ class AVLTreeList(object):
         self.root = None
         self.first = None
         self.last = None
-        # we should consider adding a length field - Guy thinks that maybe we can be stasfied with the fact that we have a pointer to the root and root's size is the length of the list
+
+    """ returns list length by getting its' root's size """
+    
+    def getLength(self):
+        return self.getRoot().getSize()
 
     """returns whether the list is empty
 
@@ -217,7 +277,7 @@ class AVLTreeList(object):
 	"""
 
     def retrieve(self, i):
-        return None
+        return self.treeSelect(i+1).getValue()
 
     """inserts val at position i in the list
 
@@ -231,7 +291,116 @@ class AVLTreeList(object):
 	"""
 
     def insert(self, i, val):
-        return -1
+        newNode = AVLNode(val)
+        if i == 0: #inserting the minimum
+            if not self.getFirst().isRealNode(): #inserting the root
+                self.setRoot(newNode)
+                newNode.completeSetLeft(AVLNode())
+                newNode.completeSetRight(AVLNode())
+
+            else:
+                self.insertLeaf(self.getFirst,newNode,"left")
+
+        elif i == self.getLength(): #inserting the maximum 
+            self.insertLeaf(self.getLast(),newNode,"right")
+
+        else: 
+            curr = self.treeSelect(i+1)
+            if not curr.getLeft().isRealNode():
+                self.insertLeaf(curr,newNode,"left")
+            else:
+                self.insertLeaf(self.getPredecessorOf(curr),newNode, "right")
+                
+        curr, numOfBalancingOp = self.fixAfterInsertion(newNode)
+        if curr != None:
+            self.increaseSizeByOneAllTheWayUpFrom(curr.getParent())
+
+        return numOfBalancingOp
+
+    """inserts node as a leaf without making any height or size adjustments.
+        the adjustments will be done in main insert function
+        
+        @type currLeaf: AVLNode
+        @param currLeaf: the leaf that we want to insert a new son to 
+        @type newLeaf: AVLNode
+        @param newLeaf: the node that we want to insert as a new leaf
+        @type direction: string
+        @param direction: indicates if newLeaf will be the left or right son of currLeaf
+        @pre: direction = "left" or direction = "right"
+        """
+
+    def insertLeaf(self, currLeaf, newLeaf, direction):
+        if direction == "right": #insert newLeaf as right son of currLeaf
+            virtualSon = currLeaf.getRight()
+            currLeaf.completeSetRight(newLeaf)
+        else: #insert newLeaf as left son of currLeaf
+            virtualSon = currLeaf.getLeft()
+            currLeaf.completeSetLeft(newLeaf)
+        
+        newLeaf.completeSetRight(virtualSon)
+        newLeaf.completeSetLeft(AVLNode())
+        
+    """travers from the inserted node to tree's root, while looking for criminal AVL subtree
+        for every node checked, it updates it size and height.
+        if there is no potential AVL criminal subtrees, it will stop and return
+        
+        @type node: AVLNode
+        @param node: inserted node
+        return value: tuple
+        returns: tuple which its first object is the last node ir checked
+                 and second object is number of rebalancing operations that has been done
+    """
+
+    def fixAfterInsertion(self, node):
+        numOfBalancingOp += node.updateHeight()
+        node.updateSize()
+        curr = node.getParent()
+
+        while curr != None:
+            curr.updateSize()
+            prevHeight = curr.getHeight()
+            numOfBalancingOp += curr.updateHeight()
+            bf = curr.getBf()
+
+            if abs(bf) < 2:
+                if prevHeight == curr.getHeight():
+                    return (curr, numOfBalancingOp)
+                else:
+                    curr = curr.getParent()
+            
+            else:
+                numOfBalancingOp += self.insertRotate(node)
+                return (curr, numOfBalancingOp)
+
+        return (curr, numOfBalancingOp)
+
+    """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
+        @type node: AVLNode
+        @param node: the root of the AVL criminal subtree
+        return: int 
+        returns: number of rebalancing operation that has been done
+    """
+    
+    def insertRotate(self,node):
+        if node.getBf() == -2:
+            if node.getRight().getBf() == -1:
+                node.leftRotate()
+                return 1 
+            else:
+                node.rightRotate()
+                node.leftRotate() #I'm not sure this is correct
+                return 2 
+        
+        else:
+            if node.getLeft().getBf() == 1:
+                node.rightRotate()
+                return 1 
+            else:
+                node.leftRotate()
+                node.rightRotate()
+                return 2
+                
+
 
     """deletes the i'th item in the list
 
@@ -346,7 +515,7 @@ class AVLTreeList(object):
                                 node.rightRotation()
                                 numOfBalancingOpps += 1
                             elif BFL == - 1:
-                                node.leftRotatation()
+                                node.leftRotation()
                                 node.rightRotation()
                                 numOfBalancingOpps += 2
                         else:  # BF = -2
@@ -401,7 +570,7 @@ class AVLTreeList(object):
     def length(self):
         if self.empty():
             return 0
-        return getRoot(self).getSize()
+        return self.getRoot().getSize()
 
     """splits the list at the i'th index
 
@@ -515,15 +684,39 @@ class AVLTreeList(object):
             node = curr
             curr = curr.getParent()
         return curr
+    
+    """returns the predecessor of a given node
 
-    # """increases by 1 the size of all the node which are in the path from node to the root
+    @type node: AVLNode
+	@rtype: AVLNode
+	@returns: the predecessor of a given node. if the node is the minimum returns None
+    complexity: O(logn)
+	"""
 
-        # @rtype: int
-        # @returns: the size of the list
-        # """
+    def getPredecessorOf (self, node):
+        if node == self.getFirst():
+            return None
+        if node.getLeft().isRealNode():
+            curr = node.getLeft()
+            while curr.getRight().isRealNode():
+                curr = curr.getRight()
+            return curr
+        else: 
+            curr = node
+            while(curr != curr.getParent().getRight()): #while current node isn't the right son of his parent
+                curr = curr.getParent
+            return curr.getParent()
+        
 
-    # def increaseSizeByOneAllTheWayUpFrom(self, node):
-    #     while True:
-    #         node.setSize(node.getSize() + 1)
-    #         if node == self.getRoot():
-    #             break
+
+
+    """increases by 1 the size of all the node which are in the path from node to the root
+
+         @rtype: int
+         @returns: the size of the list
+    """
+
+    def increaseSizeByOneAllTheWayUpFrom(self, node):
+        while (node != None):
+            node.setSize(node.getSize() + 1)
+            node = node.getParent 
