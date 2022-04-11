@@ -14,7 +14,7 @@ class AVLNode(object):
     @param value: data of your node
     """
 
-    def __init__(self, value = None):
+    def __init__(self, value=None):
         self.value = value
         self.left = None
         self.right = None
@@ -160,12 +160,13 @@ class AVLNode(object):
     """updates node height by computing it from childrens' height """
 
     def updateHeight(self):
-        self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
+        self.setHeight(max(self.getRight().getHeight(),
+                           self.getLeft().getHeight()) + 1)
 
     "updates node size by computing it from childrens' size"
 
     def updateSize(self):
-        self.setSize(self.getRight().getSize() + self.getLeft.GetSize() + 1)
+        self.setSize(self.getRight().getSize() + self.getLeft().getSize() + 1)
 
     """returns whether self is not a virtual node
 
@@ -235,34 +236,42 @@ class AVLTreeList(object):
 	"""
 
     def insert(self, i, val):
-        newNode = AVLNode(val)
-        if i == 0: #inserting the minimum
-            if self.empty(): #inserting the root
-                self.root = (newNode)
-                newNode.completeSetLeft(AVLNode())
-                newNode.completeSetRight(AVLNode())
-                self.last = newNode 
 
-            else:
-                self.insertLeaf(self.first,newNode,"left")
-            self.first = newNode
+        ### DEFINING INNER-HELP METHODS FOR INSERT FUNCTION ###
+        """travels from the inserted node to tree's root, while looking for criminal AVL subtree
+        for every node checked, it updates it size and height.
+        if there is no potential AVL criminal subtrees, it will stop and return
 
-        elif i == self.length(): #inserting the maximum 
-            self.insertLeaf(self.last,newNode,"right")
-            self.last = newNode
+        @type node: AVLNode
+        @param node: inserted node
+        return value: tuple
+        returns: tuple which its first object is the last node it checked
+                 and second object is number of rebalancing operations that has been done
+        """
 
-        else:
-            curr = self.treeSelect(i+1)
-            if not curr.getLeft().isRealNode():
-                self.insertLeaf(curr, newNode, "left")
-            else:
-                self.insertLeaf(self.getPredecessorOf(curr), newNode, "right")
+        def fixAfterInsertion(node):
+            node.updateHeight()
+            node.updateSize()
+            curr = node.getParent()
+            numOfBalancingOp = 0
 
-        curr, numOfBalancingOp = self.fixAfterInsertion(newNode)
-        if curr != None:
-            self.increaseSizeByOneAllTheWayUpFrom(curr.getParent())
+            while curr != None:
+                curr.updateSize()
+                prevHeight = curr.getHeight()
+                curr.updateHeight()
 
-        return numOfBalancingOp
+                if abs(curr.getBf()) < 2:
+                    if prevHeight == curr.getHeight():
+                        return (curr, numOfBalancingOp)
+                    else:
+                        curr = curr.getParent()
+                        numOfBalancingOp += 1
+
+                else:
+                    numOfBalancingOp += insertRotate(curr)
+                    return (curr, numOfBalancingOp)
+
+            return (curr, numOfBalancingOp)
 
         """inserts node as a leaf without making any height or size adjustments.
         the adjustments will be done in main insert function
@@ -276,79 +285,73 @@ class AVLTreeList(object):
         @pre: direction = "left" or direction = "right"
         """
 
-
-        def insertLeaf(self, currLeaf, newLeaf, direction):
-            if direction == "right": #insert newLeaf as right son of currLeaf
+        def insertLeaf(currLeaf, newLeaf, direction):
+            if direction == "right":  # insert newLeaf as right son of currLeaf
                 virtualSon = currLeaf.getRight()
                 currLeaf.completeSetRight(newLeaf)
-            else: #insert newLeaf as left son of currLeaf
+            else:  # insert newLeaf as left son of currLeaf
                 virtualSon = currLeaf.getLeft()
                 currLeaf.completeSetLeft(newLeaf)
-            
+
             newLeaf.completeSetRight(virtualSon)
             newLeaf.completeSetLeft(AVLNode())
-        
-        """travels from the inserted node to tree's root, while looking for criminal AVL subtree
-        for every node checked, it updates it size and height.
-        if there is no potential AVL criminal subtrees, it will stop and return
-        
-        @type node: AVLNode
-        @param node: inserted node
-        return value: tuple
-        returns: tuple which its first object is the last node it checked
-                 and second object is number of rebalancing operations that has been done
-        """
 
-        def fixAfterInsertion(self, node):
-            node.updateHeight()
-            node.updateSize()
-            curr = node.getParent()
-            numOfBalancingOp = 0 
-
-            while curr != None:
-                curr.updateSize()
-                prevHeight = curr.getHeight()
-                curr.updateHeight()
-
-                if abs(curr.getBf()) < 2:
-                    if prevHeight == curr.getHeight():
-                        return (curr, numOfBalancingOp)
-                    else:
-                        curr = curr.getParent()
-                        numOfBalancingOp += 1
-                
-                else:
-                    numOfBalancingOp += self.insertRotate(node)
-                    return (curr, numOfBalancingOp)
-
-            return (curr, numOfBalancingOp)
-          
-          
         """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
             @type node: AVLNode
             @param node: the root of the AVL criminal subtree
             return: int 
             returns: number of rebalancing operation that has been done
         """
-        
-        def insertRotate(self,node):
+
+        def insertRotate(node):
             if node.getBf() == -2:
                 if node.getRight().getBf() == -1:
                     self.leftRotation(node)
-                    return 1 
+                    return 1
                 else:
                     self.rightRotation(node)
-                    self.leftRotation(node) 
-                    return 2 
-            
+                    self.leftRotation(node)
+                    return 2
+
             else:
                 if node.getLeft().getBf() == 1:
                     self.rightRotation(node)
-                    return 1 
+                    return 1
                 else:
                     self.leftRotation(node)
                     self.rightRotation(node)
                     return 2
+
+        ### ACTUAL STATRT OF INSERT ###
+
+        newNode = AVLNode(val)
+        if i == 0:  # inserting the minimum
+            if self.empty():  # inserting the root
+                self.root = (newNode)
+                newNode.completeSetLeft(AVLNode())
+                newNode.completeSetRight(AVLNode())
+                self.last = newNode
+
+            else:
+                insertLeaf(self.first, newNode, "left")
+            self.first = newNode
+
+        elif i == self.length():  # inserting the maximum
+            insertLeaf(self.last, newNode, "right")
+            self.last = newNode
+
+        else:
+            curr = self.treeSelect(i+1)
+            if not curr.getLeft().isRealNode():
+                insertLeaf(curr, newNode, "left")
+            else:
+                insertLeaf(self.getPredecessorOf(curr), newNode, "right")
+
+        curr, numOfBalancingOp = fixAfterInsertion(newNode)
+        if curr != None:
+            self.updateSizeAllTheWayUpFrom(curr.getParent())
+
+        return numOfBalancingOp
 
     """deletes the i'th item in the list
 
@@ -359,57 +362,9 @@ class AVLTreeList(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 
-    # not handling mikrey kastze yet.
     def delete(self, i):
-        if i >= self.length():
-            return -1
 
-        nodeToBeDeleted = self.treeSelect(i+1)
-
-        if i == 0:  # updating first becaus deleting the first item in the list
-            self.first = self.getSuccessorOf(nodeToBeDeleted)
-
-        if i == self.length() - 1:  # updating last because deleting the last item in the list
-            self.last = self.getPredecessorOf(nodeToBeDelted)
-
-        if self.length() == 1:  # there is only one item in the list and we are deleting it
-            self.root = None
-            return 0
-
-        if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
-            numOfBalancingOpps = deleteLeaf(nodeTobeDeleted)
-            return numOfBalancingOpps
-
-        elif not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
-            numOfBalancingOpps = deleteNodeWithRightChildOnly(nodeToBeDeleted)
-            return numOfBalancingOpps
-
-        elif not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
-            numOfBalancingOpps = deleteNodeWithLeftChildOnly(nodeToBeDeleted)
-            return numOfBalancingOpps
-
-        else:  # the node has two children
-            successor = self.getSuccessorOf(nodeToBeDeleted)
-            if successor.size == 1:
-                numOfBalancingOpps = deleteLeaf(successor)
-            else:
-                numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
-
-            # putting the successor in nodeToBeDeleted place
-            parent = nodeToBeDeleted.getParent()
-            leftChild = nodeToBeDeleted.getLeft()
-            rightChild = nodeToBeDeleted.getRight()
-            if parent != None:  # if nodeToBeDeleted is the root then parent == None
-                if parent.getLeft() == nodeToBeDeleted:
-                    parent.setLeft(successor)
-                else:
-                    parent.setRight(successor)
-            else:
-                self.root = successor
-            successor.setParent(parent)
-            successor.completeSetLeft(leftChild)
-            successor.completeSetRight(rightChild)
-            return numOfBalancingOpps
+        ### DEFINING INNER-HELP METHODS FOR DELETE FUNCTION ###
 
         def deleteLeaf(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
@@ -466,7 +421,7 @@ class AVLTreeList(object):
                     heightAfter = 1 + \
                         max(node.getLeft().getHeight(),
                             node.getRight().getHeight())
-                    if abs(Bf) < 2 and heightAfter == heightBefore:
+                    if abs(BF) < 2 and heightAfter == heightBefore:
                         doneWithFixingHeight = True
 
                     elif abs(BF) < 2 and heightAfter != heightBefore:
@@ -496,6 +451,60 @@ class AVLTreeList(object):
 
                 node = node.getParent()
 
+            return numOfBalancingOpps
+
+        ### ACTUAL START OF DELETE ֳֳ###
+
+        if i >= self.length():
+            return -1
+
+        nodeToBeDeleted = self.treeSelect(i+1)
+
+        if self.length() == 1:  # there is only one item in the list and we are deleting it
+            self.root = None
+            self.first = None
+            self.last = None
+            return 0
+
+        if i == 0:  # updating first becaus deleting the first item in the list
+            self.first = self.getSuccessorOf(nodeToBeDeleted)
+
+        if i == self.length() - 1:  # updating last because deleting the last item in the list
+            self.last = self.getPredecessorOf(nodeToBeDeleted)
+
+        if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
+            numOfBalancingOpps = deleteLeaf(nodeToBeDeleted)
+            return numOfBalancingOpps
+
+        elif not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
+            numOfBalancingOpps = deleteNodeWithRightChildOnly(nodeToBeDeleted)
+            return numOfBalancingOpps
+
+        elif not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
+            numOfBalancingOpps = deleteNodeWithLeftChildOnly(nodeToBeDeleted)
+            return numOfBalancingOpps
+
+        else:  # the node has two children
+            successor = self.getSuccessorOf(nodeToBeDeleted)
+            if successor.size == 1:
+                numOfBalancingOpps = deleteLeaf(successor)
+            else:
+                numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
+
+            # putting the successor in nodeToBeDeleted place
+            parent = nodeToBeDeleted.getParent()
+            leftChild = nodeToBeDeleted.getLeft()
+            rightChild = nodeToBeDeleted.getRight()
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(successor)
+                else:
+                    parent.setRight(successor)
+            else:
+                self.root = successor
+            successor.setParent(parent)
+            successor.completeSetLeft(leftChild)
+            successor.completeSetRight(rightChild)
             return numOfBalancingOpps
 
     """returns the value of the first item in the list
@@ -662,8 +671,7 @@ class AVLTreeList(object):
     complexity: O(logn)
 	"""
 
-
-    def getPredecessorOf (self, node):
+    def getPredecessorOf(self, node):
         if node == self.first():
             return None
         if node.getLeft().isRealNode():
@@ -683,88 +691,10 @@ class AVLTreeList(object):
          @type node: AVLNode
     """
 
-    def increaseSizeByOneAllTheWayUpFrom(self, node):
+    def updateSizeAllTheWayUpFrom(self, node):
         while (node != None):
-            node.setSize(node.getSize() + 1)
-            node = node.getParent
-
-
-    # print tree functions
-
-    def printt(self):
-        out = ""
-        for row in printree(self.root):  # need printree.py file
-            out = out + row + "\n"
-        print(out)
-
-    def printree(t, bykey=True):
-        """Print a textual representation of t
-        bykey=True: show keys instead of values"""
-        # for row in trepr(t, bykey):
-        #        print(row)
-        return trepr(t, False)
-
-    def trepr(t, bykey=False):
-        """Return a list of textual representations of the levels in t
-        bykey=True: show keys instead of values"""
-        if t == None:
-            return ["#"]
-
-        thistr = str(t.key) if bykey else str(t.val)
-
-        return conc(trepr(t.left, bykey), thistr, trepr(t.right, bykey))
-
-    def conc(left, root, right):
-        """Return a concatenation of textual represantations of
-        a root node, its left node, and its right node
-        root is a string, and left and right are lists of strings"""
-
-        lwid = len(left[-1])
-        rwid = len(right[-1])
-        rootwid = len(root)
-
-        result = [(lwid+1)*" " + root + (rwid+1)*" "]
-
-        ls = leftspace(left[0])
-        rs = rightspace(right[0])
-        result.append(ls*" " + (lwid-ls)*"_" + "/" + rootwid *
-                      " " + "\\" + rs*"_" + (rwid-rs)*" ")
-
-        for i in range(max(len(left), len(right))):
-            row = ""
-            if i < len(left):
-                row += left[i]
-            else:
-                row += lwid*" "
-
-            row += (rootwid+2)*" "
-
-            if i < len(right):
-                row += right[i]
-            else:
-                row += rwid*" "
-
-            result.append(row)
-
-        return result
-
-    def leftspace(row):
-        """helper for conc"""
-        # row is the first row of a left node
-        # returns the index of where the second whitespace starts
-        i = len(row)-1
-        while row[i] == " ":
-            i -= 1
-        return i+1
-
-    def rightspace(row):
-        """helper for conc"""
-        # row is the first row of a right node
-        # returns the index of where the first whitespace ends
-        i = 0
-        while row[i] == " ":
-            i += 1
-        return i
+            node.updateSize()
+            node = node.getParent()
 
     """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
@@ -794,30 +724,107 @@ class AVLTreeList(object):
         # fixing size field off A and B, the only nodes whose size was changed
         A.updateSize()
         B.updateSize()
-        
-      """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
+
+    """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
 	"""
-def leftRotation(self, node):
-    B = node
-    parent = B.getParent()
-    A = B.getRight()
-    if parent == None:
-        self.root = A
-        A.setParent(None)
-    else:
-        if parent.getLeft() == B:
-            parent.completeSetLeft(A)
+
+    def leftRotation(self, node):
+        B = node
+        parent = B.getParent()
+        A = B.getRight()
+        if parent == None:
+            self.root = A
+            A.setParent(None)
         else:
-            parent.completeSetRight(A)
-    B.completeSetRight(A.getLeft())
-    A.completeSetLeft(B)
-    
-    # fixing height field off A and B, the only nodes whose height was changed
-    A.updateHeight()
-    B.updateHeight()
+            if parent.getLeft() == B:
+                parent.completeSetLeft(A)
+            else:
+                parent.completeSetRight(A)
+        B.completeSetRight(A.getLeft())
+        A.completeSetLeft(B)
 
-    # fixing size field off A and B, the only nodes whose size was changed
-    A.updateSize()
-    B.updateSize()
+        # fixing height field off A and B, the only nodes whose height was changed
+        A.updateHeight()
+        B.updateHeight()
 
+        # fixing size field off A and B, the only nodes whose size was changed
+        A.updateSize()
+        B.updateSize()
+
+    # print tree functions
+
+    def printt(self):
+        out = ""
+        for row in self.printree(self.root):  # need printree.py file
+            out = out + row + "\n"
+        print(out)
+
+    def printree(self, t, bykey=True):
+        """Print a textual representation of t
+        bykey=True: show keys instead of values"""
+        # for row in trepr(t, bykey):
+        #        print(row)
+        return self.trepr(t, False)
+
+    def trepr(self, t, bykey=False):
+        """Return a list of textual representations of the levels in t
+        bykey=True: show keys instead of values"""
+        if t == None:
+            return ["#"]
+
+        thistr = str(t.key) if bykey else str(t.getValue())
+
+        return self.conc(self.trepr(t.left, bykey), thistr, self.trepr(t.right, bykey))
+
+    def conc(self, left, root, right):
+        """Return a concatenation of textual represantations of
+        a root node, its left node, and its right node
+        root is a string, and left and right are lists of strings"""
+
+        lwid = len(left[-1])
+        rwid = len(right[-1])
+        rootwid = len(root)
+
+        result = [(lwid+1)*" " + root + (rwid+1)*" "]
+
+        ls = self.leftspace(left[0])
+        rs = self.rightspace(right[0])
+        result.append(ls*" " + (lwid-ls)*"_" + "/" + rootwid *
+                      " " + "\\" + rs*"_" + (rwid-rs)*" ")
+
+        for i in range(max(len(left), len(right))):
+            row = ""
+            if i < len(left):
+                row += left[i]
+            else:
+                row += lwid*" "
+
+            row += (rootwid+2)*" "
+
+            if i < len(right):
+                row += right[i]
+            else:
+                row += rwid*" "
+
+            result.append(row)
+
+        return result
+
+    def leftspace(self, row):
+        """helper for conc"""
+        # row is the first row of a left node
+        # returns the index of where the second whitespace starts
+        i = len(row)-1
+        while row[i] == " ":
+            i -= 1
+        return i+1
+
+    def rightspace(self, row):
+        """helper for conc"""
+        # row is the first row of a right node
+        # returns the index of where the first whitespace ends
+        i = 0
+        while row[i] == " ":
+            i += 1
+        return i
