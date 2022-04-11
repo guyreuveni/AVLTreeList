@@ -251,7 +251,7 @@ class AVLTreeList(object):
         else:
             return self.treeSelect(i+1).getValue()
     
-    """given that self is an AVL criminal with BF = -2 and its right son has BF = -1,
+    """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
 	"""
 def leftRotation(self, node):
