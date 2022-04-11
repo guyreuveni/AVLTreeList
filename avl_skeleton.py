@@ -20,7 +20,7 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
-        self.size = 0 
+        self.size = 0
 
     """returns the left child
 	@rtype: AVLNode
@@ -107,6 +107,7 @@ class AVLNode(object):
         @type node: AVLnode
         @param node: a node
      """
+
     def completeSetRight(self, node):
         self.setRight(node)
         node.setParent(self)
@@ -116,7 +117,7 @@ class AVLNode(object):
         @param node: a node
      """
 
-    def completeSetLeft(self,node):
+    def completeSetLeft(self, node):
         self.setLeft(node)
         node.setParent(self)
 
@@ -161,10 +162,10 @@ class AVLNode(object):
      """
 
     def updateHeight(self):
-        self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
-        return 1 
+        self.setHeight(max(self.getRight().getHeight(),
+                           self.getLeft().getHeight()) + 1)
+        return 1
 
-    
     "updates node size by computing it from childrens' size"
 
     def updateSize(self):
@@ -196,9 +197,12 @@ class AVLNode(object):
         A.updateSize()
         B.updateSize()
 
+
 """given that self is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
 	"""
+
+
 def leftRotation(self):
     B = self
     parent = B.getParent()
@@ -220,9 +224,6 @@ def leftRotation(self):
     # fixing size field off A and B, the only nodes whose size was changed
     A.updateSize()
     B.updateSize()
-
-
-
 
     """returns whether self is not a virtual node
 
@@ -254,7 +255,7 @@ class AVLTreeList(object):
         self.last = None
 
     """ returns list length by getting its' root's size """
-    
+
     def getLength(self):
         return self.getRoot().getSize()
 
@@ -292,25 +293,25 @@ class AVLTreeList(object):
 
     def insert(self, i, val):
         newNode = AVLNode(val)
-        if i == 0: #inserting the minimum
-            if not self.getFirst().isRealNode(): #inserting the root
+        if i == 0:  # inserting the minimum
+            if not self.getFirst().isRealNode():  # inserting the root
                 self.setRoot(newNode)
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
 
             else:
-                self.insertLeaf(self.getFirst,newNode,"left")
+                self.insertLeaf(self.getFirst, newNode, "left")
 
-        elif i == self.getLength(): #inserting the maximum 
-            self.insertLeaf(self.getLast(),newNode,"right")
+        elif i == self.getLength():  # inserting the maximum
+            self.insertLeaf(self.getLast(), newNode, "right")
 
-        else: 
+        else:
             curr = self.treeSelect(i+1)
             if not curr.getLeft().isRealNode():
-                self.insertLeaf(curr,newNode,"left")
+                self.insertLeaf(curr, newNode, "left")
             else:
-                self.insertLeaf(self.getPredecessorOf(curr),newNode, "right")
-                
+                self.insertLeaf(self.getPredecessorOf(curr), newNode, "right")
+
         curr, numOfBalancingOp = self.fixAfterInsertion(newNode)
         if curr != None:
             self.increaseSizeByOneAllTheWayUpFrom(curr.getParent())
@@ -330,16 +331,16 @@ class AVLTreeList(object):
         """
 
     def insertLeaf(self, currLeaf, newLeaf, direction):
-        if direction == "right": #insert newLeaf as right son of currLeaf
+        if direction == "right":  # insert newLeaf as right son of currLeaf
             virtualSon = currLeaf.getRight()
             currLeaf.completeSetRight(newLeaf)
-        else: #insert newLeaf as left son of currLeaf
+        else:  # insert newLeaf as left son of currLeaf
             virtualSon = currLeaf.getLeft()
             currLeaf.completeSetLeft(newLeaf)
-        
+
         newLeaf.completeSetRight(virtualSon)
         newLeaf.completeSetLeft(AVLNode())
-        
+
     """travers from the inserted node to tree's root, while looking for criminal AVL subtree
         for every node checked, it updates it size and height.
         if there is no potential AVL criminal subtrees, it will stop and return
@@ -367,7 +368,7 @@ class AVLTreeList(object):
                     return (curr, numOfBalancingOp)
                 else:
                     curr = curr.getParent()
-            
+
             else:
                 numOfBalancingOp += self.insertRotate(node)
                 return (curr, numOfBalancingOp)
@@ -380,27 +381,25 @@ class AVLTreeList(object):
         return: int 
         returns: number of rebalancing operation that has been done
     """
-    
-    def insertRotate(self,node):
+
+    def insertRotate(self, node):
         if node.getBf() == -2:
             if node.getRight().getBf() == -1:
                 node.leftRotate()
-                return 1 
+                return 1
             else:
                 node.rightRotate()
-                node.leftRotate() #I'm not sure this is correct
-                return 2 
-        
+                node.leftRotate()  # I'm not sure this is correct
+                return 2
+
         else:
             if node.getLeft().getBf() == 1:
                 node.rightRotate()
-                return 1 
+                return 1
             else:
                 node.leftRotate()
                 node.rightRotate()
                 return 2
-                
-
 
     """deletes the i'th item in the list
 
@@ -684,7 +683,7 @@ class AVLTreeList(object):
             node = curr
             curr = curr.getParent()
         return curr
-    
+
     """returns the predecessor of a given node
 
     @type node: AVLNode
@@ -693,7 +692,7 @@ class AVLTreeList(object):
     complexity: O(logn)
 	"""
 
-    def getPredecessorOf (self, node):
+    def getPredecessorOf(self, node):
         if node == self.getFirst():
             return None
         if node.getLeft().isRealNode():
@@ -701,14 +700,12 @@ class AVLTreeList(object):
             while curr.getRight().isRealNode():
                 curr = curr.getRight()
             return curr
-        else: 
+        else:
             curr = node
-            while(curr != curr.getParent().getRight()): #while current node isn't the right son of his parent
+            # while current node isn't the right son of his parent
+            while(curr != curr.getParent().getRight()):
                 curr = curr.getParent
             return curr.getParent()
-        
-
-
 
     """increases by 1 the size of all the node which are in the path from node to the root
 
@@ -719,4 +716,81 @@ class AVLTreeList(object):
     def increaseSizeByOneAllTheWayUpFrom(self, node):
         while (node != None):
             node.setSize(node.getSize() + 1)
-            node = node.getParent 
+            node = node.getParent
+
+    # print tree functions
+
+    def printt(self):
+        out = ""
+        for row in printree(self.root):  # need printree.py file
+            out = out + row + "\n"
+        print(out)
+
+    def printree(t, bykey=True):
+        """Print a textual representation of t
+        bykey=True: show keys instead of values"""
+        # for row in trepr(t, bykey):
+        #        print(row)
+        return trepr(t, False)
+
+    def trepr(t, bykey=False):
+        """Return a list of textual representations of the levels in t
+        bykey=True: show keys instead of values"""
+        if t == None:
+            return ["#"]
+
+        thistr = str(t.key) if bykey else str(t.val)
+
+        return conc(trepr(t.left, bykey), thistr, trepr(t.right, bykey))
+
+    def conc(left, root, right):
+        """Return a concatenation of textual represantations of
+        a root node, its left node, and its right node
+        root is a string, and left and right are lists of strings"""
+
+        lwid = len(left[-1])
+        rwid = len(right[-1])
+        rootwid = len(root)
+
+        result = [(lwid+1)*" " + root + (rwid+1)*" "]
+
+        ls = leftspace(left[0])
+        rs = rightspace(right[0])
+        result.append(ls*" " + (lwid-ls)*"_" + "/" + rootwid *
+                      " " + "\\" + rs*"_" + (rwid-rs)*" ")
+
+        for i in range(max(len(left), len(right))):
+            row = ""
+            if i < len(left):
+                row += left[i]
+            else:
+                row += lwid*" "
+
+            row += (rootwid+2)*" "
+
+            if i < len(right):
+                row += right[i]
+            else:
+                row += rwid*" "
+
+            result.append(row)
+
+        return result
+
+    def leftspace(row):
+        """helper for conc"""
+        # row is the first row of a left node
+        # returns the index of where the second whitespace starts
+        i = len(row)-1
+        while row[i] == " ":
+            i -= 1
+        return i+1
+
+    def rightspace(row):
+        """helper for conc"""
+        # row is the first row of a right node
+        # returns the index of where the first whitespace ends
+        i = 0
+        while row[i] == " ":
+            i += 1
+        return i
