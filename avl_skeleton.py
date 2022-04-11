@@ -20,7 +20,7 @@ class AVLNode(object):
         self.right = None
         self.parent = None
         self.height = -1
-        self.size = 0 
+        self.size = 0
 
     """returns the left child
 	@rtype: AVLNode
@@ -72,16 +72,16 @@ class AVLNode(object):
 	@returns: the size of self, 0 if the node is virtual
 	"""
 
-    def getSize(self):  # Guy added it
+    def getSize(self):
         return self.size
 
     """returns the balnce factor
 
+    @pre: self is a real node 
 	@rtype: int
 	@returns: the balance factor of self
 	"""
 
-    # Guy added it. noe sure what to return if the node is virtual.
     def getBf(self):
         return self.left.getHeight() - self.right.getHeight()
 
@@ -104,21 +104,22 @@ class AVLNode(object):
         self.right = node
 
     """ sets right child and also sets right child's parent
-        @type node: AVLnode
-        @param node: a node
+        @type child: AVLnode
+        @param child: a node
      """
-    def completeSetRight(self, node):
-        self.setRight(node)
-        node.setParent(self)
+
+    def completeSetRight(self, child):
+        self.setRight(child)
+        child.setParent(self)
 
     """ sets left child and also sets right child's parent
-        @type node: AVLnode
-        @param node: a node
+        @type child: AVLnode
+        @param child: a node
      """
 
-    def completeSetLeft(self,node):
-        self.setLeft(node)
-        node.setParent(self)
+    def completeSetLeft(self, child):
+        self.setLeft(child)
+        child.setParent(self)
 
     """sets parent
 
@@ -161,40 +162,10 @@ class AVLNode(object):
     def updateHeight(self):
         self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
 
-    
     "updates node size by computing it from childrens' size"
 
     def updateSize(self):
         self.setSize(self.getRight().getSize() + self.getLeft.GetSize() + 1)
-
-    """given that self is an AVL criminal with BF = +2 and its left son has BF = +1,
-    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
-	"""
-
-    def rightRotation(self):  # not handling the root problem yet
-        B = self
-        parent = B.getParent()
-        A = B.getLeft()
-        if parent.getLeft() == B:
-            parent.setLeft(A)
-        else:
-            parent.setRight(A)
-        A.setParent(parent)
-        B.setParent(A)
-        B.setLeft(A.getRight())
-        A.setRight(B)
-        B.getLeft().setParent(B)
-
-        # fixing height field off A and B, the only nodes whose height was changed
-        A.updateHeight()
-        B.updateHeight()
-
-        # fixing size field off A and B, the only nodes whose size was changed
-        A.updateSize()
-        B.updateSize()
-
-
-
 
 
     """returns whether self is not a virtual node
@@ -225,15 +196,17 @@ class AVLTreeList(object):
         self.root = None
         self.first = None
         self.last = None
-
+        
     """returns whether the list is empty
 
 	@rtype: bool
 	@returns: True if the list is empty, False otherwise
 	"""
 
-    def empty(self):  # better to be implented after we understand how we enter the first element to the list
-        return None
+    def empty(self):
+        if self.root == None:
+            return True
+        return False
 
     """retrieves the value of the i'th item in the list
 
@@ -250,24 +223,6 @@ class AVLTreeList(object):
             return None
         else:
             return self.treeSelect(i+1).getValue()
-    
-    """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
-    fixes the Bf of self. furthermore, updating the height and size fields of the nodes involved
-	"""
-def leftRotation(self, node):
-    B = node
-    parent = B.getParent()
-    A = B.getRight()
-    if parent == None:
-        self.root = A
-        A.setParent(None)
-    else:
-        if parent.getLeft() == B:
-            parent.completeSetLeft(A)
-        else:
-            parent.completeSetRight(A)
-    B.completeSetRight(A.getLeft())
-    A.completeSetLeft(B)
 
     """inserts val at position i in the list
 
@@ -297,13 +252,13 @@ def leftRotation(self, node):
             self.insertLeaf(self.last,newNode,"right")
             self.last = newNode
 
-        else: 
+        else:
             curr = self.treeSelect(i+1)
             if not curr.getLeft().isRealNode():
-                self.insertLeaf(curr,newNode,"left")
+                self.insertLeaf(curr, newNode, "left")
             else:
-                self.insertLeaf(self.getPredecessorOf(curr),newNode, "right")
-                
+                self.insertLeaf(self.getPredecessorOf(curr), newNode, "right")
+
         curr, numOfBalancingOp = self.fixAfterInsertion(newNode)
         if curr != None:
             self.increaseSizeByOneAllTheWayUpFrom(curr.getParent())
@@ -393,11 +348,6 @@ def leftRotation(self, node):
                     self.leftRotation(node)
                     self.rightRotation(node)
                     return 2
-                
-    
-        
-    
-
 
     """deletes the i'th item in the list
 
@@ -414,6 +364,16 @@ def leftRotation(self, node):
             return -1
 
         nodeToBeDeleted = self.treeSelect(i+1)
+
+        if i == 0:  # updating first becaus deleting the first item in the list
+            self.first = self.getSuccessorOf(nodeToBeDeleted)
+
+        if i == self.length() - 1:  # updating last because deleting the last item in the list
+            self.last = self.getPredecessorOf(nodeToBeDelted)
+
+        if self.length() == 1:  # there is only one item in the list and we are deleting it
+            self.root = None
+            return 0
 
         if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
             numOfBalancingOpps = deleteLeaf(nodeTobeDeleted)
@@ -433,28 +393,29 @@ def leftRotation(self, node):
                 numOfBalancingOpps = deleteLeaf(successor)
             else:
                 numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
+
+            # putting the successor in nodeToBeDeleted place
             parent = nodeToBeDeleted.getParent()
             leftChild = nodeToBeDeleted.getLeft()
             rightChild = nodeToBeDeleted.getRight()
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(successor)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(successor)
+                else:
+                    parent.setRight(successor)
             else:
-                parent.setRight(successor)
+                self.root = successor
             successor.setParent(parent)
-            leftChild.setParent(successor)
-            successor.setLeft(leftChild)
-            rightChild.setParent(successor)
-            successor.setRight(rightChild)
+            successor.completeSetLeft(leftChild)
+            successor.completeSetRight(rightChild)
             return numOfBalancingOpps
-
-        return -1
 
         def deleteLeaf(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
             if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(nodeToBeDeleted.getLeft())
+                parent.completeSetLeft(nodeToBeDeleted.getLeft())
             else:
-                parent.setRight(nodeToBeDeleted.getRight())
+                parent.completeSetRight(nodeToBeDeleted.getRight())
             nodeToBeDeleted.setParent(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
             return numOfBalancingOpps
@@ -463,10 +424,14 @@ def leftRotation(self, node):
             parent = nodeToBeDeleted.getParent()
             child = nodeToBeDeleted.getRight()
             child.setParent(parent)
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(child)
-            else:
-                parent.setRight(child)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(child)
+                else:
+                    parent.setRight(child)
+            else:  # the nodeToBeDeleted is the root and it has only right child, that means that there are only two nodes in the tree, and now the right child becomes the root.
+                self.root = child
+
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setRight(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
@@ -476,10 +441,14 @@ def leftRotation(self, node):
             parent = nodeToBeDeleted.getParent()
             child = nodeToBeDeleted.getLeft()
             child.setParent(parent)
-            if parent.getLeft() == nodeToBeDeleted:
-                parent.setLeft(child)
-            else:
-                parent.setRight(child)
+            if parent != None:  # if nodeToBeDeleted is the root then parent == None
+                if parent.getLeft() == nodeToBeDeleted:
+                    parent.setLeft(child)
+                else:
+                    parent.setRight(child)
+            else:  # the nodeToBeDeleted is the root and it has only left child, that means that there are only two nodes in the tree, and now the left child becomes the root.
+                self.root = child
+
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setLeft(None)
             numOfBalancingOpps = fixTreeAfterDeletion(parent)
@@ -488,7 +457,7 @@ def leftRotation(self, node):
         def fixTreeAfterDeletion(node):
             numOfBalancingOpps = 0
             doneWithFixingHeight = False
-            while True:
+            while node != None:
                 node.setSize(node.getSize() - 1)
                 if not doneWithFixingHeight:
                     BF = node.getBf()
@@ -505,32 +474,29 @@ def leftRotation(self, node):
                     else:  # abs(BF) = 2
                         if heightAfter != heightBefore:
                             node.setHeight(heightAfter)
-                            numOfBalancingOpps += 1
                         if BF == 2:
                             BFL = node.getLeft().getBf()
                             if BFL == 1 or BFL == 0:
-                                node.rightRotation()
+                                self.rightRotation(node)
                                 numOfBalancingOpps += 1
                             elif BFL == - 1:
-                                node.leftRotation()
-                                node.rightRotation()
+                                self.leftRotation(node)
+                                self.rightRotation(node)
                                 numOfBalancingOpps += 2
                         else:  # BF = -2
                             BFR = node.getRight().getBf()
                             if BFR == -1 or BFR == 0:
-                                node.leftRotatation()
+                                self.leftRotatation(node)
                                 numOfBalancingOpps += 1
                             elif BFR == 1:
-                                node.rightRotation()
-                                node.leftRotatation()
+                                self.rightRotation(node)
+                                self.leftRotatation(node)
                                 numOfBalancingOpps += 2
 
                 node = node.getParent()
 
-                if node == self.getRoot():
-                    break
-
             return numOfBalancingOpps
+
     """returns the value of the first item in the list
 
 	@rtype: str
@@ -538,6 +504,8 @@ def leftRotation(self, node):
 	"""
 
     def first(self):
+        if self.empty():
+            return None
         return self.first.getValue()
 
     """returns the value of the last item in the list
@@ -547,6 +515,8 @@ def leftRotation(self, node):
 	"""
 
     def last(self):
+        if self.empty():
+            return None
         return self.last.getValue()
 
     """returns an array representing list
@@ -614,6 +584,7 @@ def leftRotation(self, node):
         return self.root
 
     # service methods
+
     """returns the i'th smallest node in the tree
 
     @type i: int
@@ -681,7 +652,7 @@ def leftRotation(self, node):
             node = curr
             curr = curr.getParent()
         return curr
-    
+
     """returns the predecessor of a given node
 
     @type node: AVLNode
@@ -698,22 +669,66 @@ def leftRotation(self, node):
             while curr.getRight().isRealNode():
                 curr = curr.getRight()
             return curr
-        else: 
+        else:
             curr = node
-            while(curr != curr.getParent().getRight()): #while current node isn't the right son of his parent
+            # while current node isn't the right son of his parent
+            while(curr != curr.getParent().getRight()):
                 curr = curr.getParent
             return curr.getParent()
-        
-
-
 
     """increases by 1 the size of all the node which are in the path from node to the root
 
-         @rtype: int
-         @returns: the size of the list
+         @type node: AVLNode
     """
 
     def increaseSizeByOneAllTheWayUpFrom(self, node):
         while (node != None):
             node.setSize(node.getSize() + 1)
-            node = node.getParent 
+            node = node.getParent
+
+    """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
+    fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+	"""
+
+    def rightRotation(self, node):  # not handling the root problem yet
+        B = node
+        parent = B.getParent()
+        A = B.getLeft()
+        if parent != None:  # if B is the root then parent == None
+            if parent.getLeft() == B:
+                parent.setLeft(A)
+            else:
+                parent.setRight(A)
+        else:
+            self.root = A
+        A.setParent(parent)
+        B.setParent(A)
+        B.setLeft(A.getRight())
+        A.setRight(B)
+        B.getLeft().setParent(B)
+
+        # fixing height field off A and B, the only nodes whose height was changed
+        A.updateHeight()
+        B.updateHeight()
+
+        # fixing size field off A and B, the only nodes whose size was changed
+        A.updateSize()
+        B.updateSize()
+        
+      """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
+    fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+	"""
+def leftRotation(self, node):
+    B = node
+    parent = B.getParent()
+    A = B.getRight()
+    if parent == None:
+        self.root = A
+        A.setParent(None)
+    else:
+        if parent.getLeft() == B:
+            parent.completeSetLeft(A)
+        else:
+            parent.completeSetRight(A)
+    B.completeSetRight(A.getLeft())
+    A.completeSetLeft(B)
