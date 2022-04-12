@@ -536,7 +536,21 @@ class AVLTreeList(object):
 	"""
 
     def listToArray(self):
-        return None
+        #enveloped recursive function
+        def envList2Arr(node, lst):
+            if (not node.getRight().isRealNode()) and (not node.getLeft().isRealNode()):
+                lst.append(node.getValue())
+                return lst
+            else:
+                if node.getLeft().isRealNode():
+                    envList2Arr(node.getLeft(), lst)
+                lst.append(node.getValue())
+                if node.getRight().isRealNode():
+                    envList2Arr(node.getRight(), lst)
+            return lst
+        res = list()
+        return envList2Arr(self.getRoot(), res)
+            
 
     """returns the size of the list
 
