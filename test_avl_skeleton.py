@@ -569,13 +569,13 @@ class testAVLList(unittest.TestCase):
             T.insert(0, i)
 
         for i in range(99):
-            if i//5 == 0:
+            if i % 5 == 0:
                 T.delete(0)
-            elif i//5 == 1:
+            elif i % 5 == 1:
                 T.delete(T.length()-1)
-            elif i//5 == 2:
+            elif i % 5 == 2:
                 T.delete((T.length()-1)//2)
-            elif i//5 == 3:
+            elif i % 5 == 3:
                 T.delete((T.length()-1)//3)
             else:
                 T.delete((T.length()-1)//7)
@@ -604,3 +604,292 @@ class testAVLList(unittest.TestCase):
             else:
                 T.delete(T.length()//2)
             self.in_order(T, T.getRoot(), self.check_size)
+
+        ###TESTING HEIGHT###
+
+    def check_height(self, node, tree):
+        self.assertEqual(node.getHeight(), max(node.getLeft(
+        ).getHeight(), node.getRight().getHeight()) + 1)
+
+    def test_height_after_insertion_at_start(self):
+        T2 = AVLTreeList()
+
+        for i in range(50):
+            T2.insert(0, i)
+            self.in_order(T2, T2.getRoot(), self.check_height)
+
+    def test_height_after_deletion_from_start(self):
+        T = AVLTreeList()
+        for i in range(50):
+            T.insert(0, i)
+
+        for i in range(49):
+            T.delete(0)
+            self.in_order(T, T.getRoot(), self.check_height)
+
+    def test_height_after_insertion_at_end(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(T3.length(), i)
+            self.in_order(T3, T3.getRoot(), self.check_height)
+
+    def test_height_after_deletion_from_end(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(T3.length(), i)
+
+        for i in range(49):
+            T3.delete(T3.length()-1)
+            self.in_order(T3, T3.getRoot(), self.check_height)
+
+    def test_height_after_insertion_at_middle(self):
+        T4 = AVLTreeList()
+
+        for i in range(50):
+            T4.insert(i//2, i)
+            self.in_order(T4, T4.getRoot(), self.check_height)
+
+    def test_height_after_deletion_from_middle(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(0, i)
+
+        for i in range(49):
+            T3.delete(i//2)
+            self.in_order(T3, T3.getRoot(), self.check_height)
+
+    def test_height_after_insertion_alternatly(self):
+        T5 = AVLTreeList()
+
+        for i in range(200):
+            if i % 5 == 0:
+                T5.insert(0, i)
+            elif i % 5 == 1:
+                T5.insert(T5.length(), i)
+            elif i % 5 == 2:
+                T5.insert(i//2, i)
+            elif i % 5 == 3:
+                T5.insert(i//3, i)
+            else:
+                T5.insert(i//7, i)
+            self.in_order(T5, T5.getRoot(), self.check_height)
+
+    def test_height_after_deletion_alternatly(self):
+        T = AVLTreeList()
+
+        for i in range(100):
+            T.insert(0, i)
+
+        for i in range(99):
+            if i % 5 == 0:
+                T.delete(0)
+            elif i % 5 == 1:
+                T.delete(T.length()-1)
+            elif i % 5 == 2:
+                T.delete((T.length()-1)//2)
+            elif i % 5 == 3:
+                T.delete((T.length()-1)//3)
+            else:
+                T.delete((T.length()-1)//7)
+            self.in_order(T, T.getRoot(), self.check_height)
+
+    def test_height_after_deleting_and_inserting_small(self):
+        T = AVLTreeList()
+
+        for i in range(20):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+            self.in_order(T, T.getRoot(), self.check_height)
+
+    def test_height_after_deleting_and_inserting_big(self):
+        T = AVLTreeList()
+
+        for i in range(500):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+            self.in_order(T, T.getRoot(), self.check_height)
+
+    ###TESTING SEARCH###
+
+    def test_search_basic(self):
+        self.assertEqual(-1, self.emptyList.search(None))
+        self.assertEqual(-1, self.emptyList.search(20))
+        for i in range(20):
+            self.assertEqual(i, self.twentyTree.search(i))
+        self.assertEqual(-1, self.twentyTree.search(21))
+
+    def test_search_after_insertion_at_start(self):
+        T2 = AVLTreeList()
+        L2 = []
+
+        for i in range(50):
+            T2.insert(0, i)
+            L2.insert(0, i)
+            for j in range(len(L2)):
+                self.assertEqual(T2.search(L2[j]), j)
+            self.assertEqual(-1, T2.search(-20))
+
+    def test_search_after_deletion_from_start(self):
+        T = AVLTreeList()
+        L = []
+        for i in range(50):
+            T.append(i)
+            L.append(i)
+
+        for i in range(49):
+            T.delete(0)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_insertion_at_end(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(50):
+            T.append(i)
+            L.append(i)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_deletion_from_end(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(50):
+            T.append(i)
+            L.append(i)
+
+        for i in range(49):
+            T.delete(T.length()-1)
+            L.pop(len(L)-1)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_insertion_at_middle(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(50):
+            T.insert(i//2, i)
+            L.insert(i//2, i)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_deletion_from_middle(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(50):
+            T.insert(0, i)
+            L.insert(0, i)
+
+        for i in range(49):
+            T.delete(T.length()//2)
+            L.pop(len(L)//2)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_insertion_alternatly(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(200):
+            if i % 5 == 0:
+                T.insert(0, i)
+                L.insert(0, i)
+            elif i % 5 == 1:
+                T.append(i)
+                L.append(i)
+            elif i % 5 == 2:
+                T.insert(i//2, i)
+                L.insert(i//2, i)
+            elif i % 5 == 3:
+                T.insert(i//3, i)
+                L.insert(i//3, i)
+            else:
+                T.insert(i//7, i)
+                L.insert(i//7, i)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_height_search_deletion_alternatly(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(100):
+            T.insert(0, i)
+            L.insert(0, i)
+
+        for i in range(99):
+            if i % 5 == 0:
+                T.delete(0)
+                L.pop(0)
+            elif i % 5 == 1:
+                T.delete(T.length()-1)
+                L.pop(len(L)-1)
+            elif i % 5 == 2:
+                T.delete((T.length()-1)//2)
+                L.pop((len(L)-1)//2)
+            elif i % 5 == 3:
+                T.delete((T.length()-1)//3)
+                L.pop((len(L)-1)//3)
+            else:
+                T.delete((T.length()-1)//7)
+                L.pop((len(L)-1)//7)
+
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_deleting_and_inserting_small(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(20):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+                L.insert(len(L)//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+                L.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+                L.pop(len(L)//2)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
+
+    def test_search_after_deleting_and_inserting_big(self):
+        T = AVLTreeList()
+        L = []
+
+        for i in range(500):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+                L.insert(len(L)//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+                L.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+                L.pop(len(L)//2)
+            for j in range(len(L)):
+                self.assertEqual(T.search(L[j]), j)
+            self.assertEqual(-1, T.search(-20))
