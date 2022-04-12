@@ -549,6 +549,8 @@ class AVLTreeList(object):
                     envList2Arr(node.getRight(), lst)
             return lst
         res = list()
+        if self.empty:
+            return res
         return envList2Arr(self.getRoot(), res)
             
 
