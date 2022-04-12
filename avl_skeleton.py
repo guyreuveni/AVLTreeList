@@ -373,7 +373,7 @@ class AVLTreeList(object):
             else:
                 parent.completeSetRight(nodeToBeDeleted.getRight())
             nodeToBeDeleted.setParent(None)
-            numOfBalancingOpps = fixTreeAfterDeletion(parent)
+            numOfBalancingOpps = self.fixTreeAfterDeletionAndJoin(parent)
             return numOfBalancingOpps
 
         def deleteNodeWithRightChildOnly(nodeToBeDeleted):
@@ -390,7 +390,7 @@ class AVLTreeList(object):
 
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setRight(None)
-            numOfBalancingOpps = fixTreeAfterDeletion(parent)
+            numOfBalancingOpps = self.fixTreeAfterDeletionAndJoin(parent)
             return numOfBalancingOpps
 
         def deleteNodeWithLeftChildOnly(nodeToBeDeleted):
@@ -407,50 +407,7 @@ class AVLTreeList(object):
 
             nodeToBeDeleted.setParent(None)
             nodeToBeDeleted.setLeft(None)
-            numOfBalancingOpps = fixTreeAfterDeletion(parent)
-            return numOfBalancingOpps
-
-        def fixTreeAfterDeletion(node):
-            numOfBalancingOpps = 0
-            doneWithFixingHeight = False
-            while node != None:
-                node.setSize(node.getSize() - 1)
-                if not doneWithFixingHeight:
-                    BF = node.getBf()
-                    heightBefore = node.getHeight()
-                    heightAfter = 1 + \
-                        max(node.getLeft().getHeight(),
-                            node.getRight().getHeight())
-                    if abs(BF) < 2 and heightAfter == heightBefore:
-                        doneWithFixingHeight = True
-
-                    elif abs(BF) < 2 and heightAfter != heightBefore:
-                        node.setHeight(heightAfter)
-                        numOfBalancingOpps += 1
-                    else:  # abs(BF) = 2
-                        if heightAfter != heightBefore:
-                            node.setHeight(heightAfter)
-                        if BF == 2:
-                            BFL = node.getLeft().getBf()
-                            if BFL == 1 or BFL == 0:
-                                self.rightRotation(node)
-                                numOfBalancingOpps += 1
-                            elif BFL == - 1:
-                                self.leftRotation(node)
-                                self.rightRotation(node)
-                                numOfBalancingOpps += 2
-                        else:  # BF = -2
-                            BFR = node.getRight().getBf()
-                            if BFR == -1 or BFR == 0:
-                                self.leftRotatation(node)
-                                numOfBalancingOpps += 1
-                            elif BFR == 1:
-                                self.rightRotation(node)
-                                self.leftRotatation(node)
-                                numOfBalancingOpps += 2
-
-                node = node.getParent()
-
+            numOfBalancingOpps = self.fixTreeAfterDeletionAndJoin(parent)
             return numOfBalancingOpps
 
         ### ACTUAL START OF DELETE ֳֳ###
@@ -505,6 +462,8 @@ class AVLTreeList(object):
             successor.setParent(parent)
             successor.completeSetLeft(leftChild)
             successor.completeSetRight(rightChild)
+            successor.updateHeight()
+            successor.updateSize()
             return numOfBalancingOpps
 
     """returns the value of the first item in the list
@@ -536,7 +495,7 @@ class AVLTreeList(object):
 	"""
 
     def listToArray(self):
-        #enveloped recursive function
+        # enveloped recursive function
         def envList2Arr(node, lst):
             if (not node.getRight().isRealNode()) and (not node.getLeft().isRealNode()):
                 lst.append(node.getValue())
@@ -552,7 +511,6 @@ class AVLTreeList(object):
         if self.empty:
             return res
         return envList2Arr(self.getRoot(), res)
-            
 
     """returns the size of the list
 
@@ -742,12 +700,12 @@ class AVLTreeList(object):
         B.getLeft().setParent(B)
 
         # fixing height field off A and B, the only nodes whose height was changed
-        A.updateHeight()
         B.updateHeight()
+        A.updateHeight()
 
         # fixing size field off A and B, the only nodes whose size was changed
-        A.updateSize()
         B.updateSize()
+        A.updateSize()
 
     """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
@@ -769,12 +727,12 @@ class AVLTreeList(object):
         A.completeSetLeft(B)
 
         # fixing height field off A and B, the only nodes whose height was changed
-        A.updateHeight()
         B.updateHeight()
+        A.updateHeight()
 
         # fixing size field off A and B, the only nodes whose size was changed
-        A.updateSize()
         B.updateSize()
+        A.updateSize()
 
     # print tree functions
 
@@ -852,3 +810,47 @@ class AVLTreeList(object):
         while row[i] == " ":
             i += 1
         return i
+
+    """
+    need to add documantation
+    """
+
+    def fixTreeAfterDeletionAndJoin(self, node):
+        numOfBalancingOpps = 0
+        doneWithFixingHeight = False
+        while node != None:
+            originalParent = node.getParent()
+            node.updateSize()
+            if not doneWithFixingHeight:
+                BF = node.getBf()
+                heightBefore = node.getHeight()
+                node.updateHeight()
+                heightAfter = node.getHeight()
+                if abs(BF) < 2 and heightAfter == heightBefore:
+                    doneWithFixingHeight = True
+
+                elif abs(BF) < 2 and heightAfter != heightBefore:
+                    numOfBalancingOpps += 1
+                else:  # abs(BF) = 2
+                    if BF == 2:
+                        BFL = node.getLeft().getBf()
+                        if BFL == 1 or BFL == 0:
+                            self.rightRotation(node)
+                            numOfBalancingOpps += 1
+                        elif BFL == - 1:
+                            self.leftRotation(node)
+                            self.rightRotation(node)
+                            numOfBalancingOpps += 2
+                    else:  # BF = -2
+                        BFR = node.getRight().getBf()
+                        if BFR == -1 or BFR == 0:
+                            self.leftRotation(node)
+                            numOfBalancingOpps += 1
+                        elif BFR == 1:
+                            self.rightRotation(node)
+                            self.leftRotation(node)
+                            numOfBalancingOpps += 2
+
+            node = originalParent
+
+        return numOfBalancingOpps
