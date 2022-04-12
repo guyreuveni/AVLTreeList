@@ -194,8 +194,8 @@ class AVLTreeList(object):
 
     def __init__(self):
         self.root = None
-        self.first = None
-        self.last = None
+        self.firstItem = None
+        self.lastItem = None
 
     """returns whether the list is empty
 
@@ -330,15 +330,15 @@ class AVLTreeList(object):
                 self.root = (newNode)
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
-                self.last = newNode
+                self.lastItem = newNode
 
             else:
-                insertLeaf(self.first, newNode, "left")
-            self.first = newNode
+                insertLeaf(self.firstItem, newNode, "left")
+            self.firstItem = newNode
 
         elif i == self.length():  # inserting the maximum
-            insertLeaf(self.last, newNode, "right")
-            self.last = newNode
+            insertLeaf(self.lastItem, newNode, "right")
+            self.lastItem = newNode
 
         else:
             curr = self.treeSelect(i+1)
@@ -462,15 +462,15 @@ class AVLTreeList(object):
 
         if self.length() == 1:  # there is only one item in the list and we are deleting it
             self.root = None
-            self.first = None
-            self.last = None
+            self.firstItem = None
+            self.lastItem = None
             return 0
 
         if i == 0:  # updating first becaus deleting the first item in the list
-            self.first = self.getSuccessorOf(nodeToBeDeleted)
+            self.firstItem = self.getSuccessorOf(nodeToBeDeleted)
 
         if i == self.length() - 1:  # updating last because deleting the last item in the list
-            self.last = self.getPredecessorOf(nodeToBeDeleted)
+            self.lastItem = self.getPredecessorOf(nodeToBeDeleted)
 
         if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
             numOfBalancingOpps = deleteLeaf(nodeToBeDeleted)
@@ -516,7 +516,7 @@ class AVLTreeList(object):
     def first(self):
         if self.empty():
             return None
-        return self.first.getValue()
+        return self.firstItem.getValue()
 
     """returns the value of the last item in the list
 
@@ -527,7 +527,7 @@ class AVLTreeList(object):
     def last(self):
         if self.empty():
             return None
-        return self.last.getValue()
+        return self.lastItem.getValue()
 
     """returns an array representing list
 
@@ -593,10 +593,18 @@ class AVLTreeList(object):
 	@param val: a value to be searched
 	@rtype: int
 	@returns: the first index that contains val, -1 if not found.
+    @complexity: O(n)
 	"""
 
     def search(self, val):
-        return None
+        candidate = self.firstItem
+        index = 0
+        while candidate != None:
+            if candidate.getValue() == val:
+                return index
+            index += 1
+            candidate = self.getSuccessorOf(candidate)
+        return -1
 
     """returns the root of the tree representing the list
 
@@ -621,9 +629,9 @@ class AVLTreeList(object):
 
     def treeSelect(self, i):
         if i == 1:
-            return self.first
+            return self.firstItem
         if i == self.length():
-            return self.last
+            return self.lastItem
 
         curr = self.findSmallestSubTreeOfSize(i)
         r = curr.getLeft().getSize() + 1
@@ -648,7 +656,7 @@ class AVLTreeList(object):
     """
 
     def findSmallestSubTreeOfSize(self, k):
-        curr = self.first
+        curr = self.firstItem
         while (curr.getSize() < k):
             curr = curr.getParent()
         return curr
@@ -662,17 +670,17 @@ class AVLTreeList(object):
 	"""
 
     def getSuccessorOf(self, node):
-        if self.last == node:
+        if self.lastItem == node:
             return None
 
         if node.getRight().isRealNode():
             curr = node.getRight()
-            while curr.isRealNode():
+            while curr.getLeft().isRealNode():
                 curr = curr.getLeft()
             return curr
 
         curr = node.getParent()
-        while curr.isRealNode and curr.getRight() == node:
+        while (curr != None) and (curr.getRight() == node):
             node = curr
             curr = curr.getParent()
         return curr
@@ -686,7 +694,7 @@ class AVLTreeList(object):
 	"""
 
     def getPredecessorOf(self, node):
-        if node == self.first():
+        if node == self.firstItem:
             return None
         if node.getLeft().isRealNode():
             curr = node.getLeft()
