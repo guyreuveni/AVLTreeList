@@ -309,7 +309,7 @@ class AVLTreeList(object):
                     self.leftRotation(node)
                     return 1
                 else:
-                    self.rightRotation(node)
+                    self.rightRotation(node.getRight())
                     self.leftRotation(node)
                     return 2
 
@@ -318,7 +318,7 @@ class AVLTreeList(object):
                     self.rightRotation(node)
                     return 1
                 else:
-                    self.leftRotation(node)
+                    self.leftRotation(node.getLeft())
                     self.rightRotation(node)
                     return 2
 
@@ -412,7 +412,7 @@ class AVLTreeList(object):
 
         ### ACTUAL START OF DELETE ֳֳ###
 
-        if i >= self.length():
+        if i < 0 or i >= self.length():
             return -1
 
         nodeToBeDeleted = self.treeSelect(i+1)
@@ -617,6 +617,7 @@ class AVLTreeList(object):
 
     def findSmallestSubTreeOfSize(self, k):
         curr = self.firstItem
+        self.printt()
         while (curr.getSize() < k):
             curr = curr.getParent()
         return curr
@@ -683,6 +684,21 @@ class AVLTreeList(object):
 	"""
 
     def rightRotation(self, node):  # not handling the root problem yet
+        # B = node
+        # A = B.getLeft()
+        # B.setLeft(A.getRight())
+        # B.getLeft().setParent(B)
+        # A.setRight(B)
+        # A.setParent(B.getParent())
+        # if A.getParent() != None:
+        #     if A.getParent().getLeft() == B:
+        #         A.getParent().setLeft(A)
+        #     else:
+        #         A.getParent().setRight(A)
+        # else:
+        #     self.root = A
+        # B.setParent(A)
+
         B = node
         parent = B.getParent()
         A = B.getLeft()
@@ -838,7 +854,7 @@ class AVLTreeList(object):
                             self.rightRotation(node)
                             numOfBalancingOpps += 1
                         elif BFL == - 1:
-                            self.leftRotation(node)
+                            self.leftRotation(node.getLeft())
                             self.rightRotation(node)
                             numOfBalancingOpps += 2
                     else:  # BF = -2
@@ -847,10 +863,13 @@ class AVLTreeList(object):
                             self.leftRotation(node)
                             numOfBalancingOpps += 1
                         elif BFR == 1:
-                            self.rightRotation(node)
+                            self.rightRotation(node.getRight())
                             self.leftRotation(node)
                             numOfBalancingOpps += 2
 
             node = originalParent
 
         return numOfBalancingOpps
+
+    def append(self, val):
+        self.insert(self.length(), val)
