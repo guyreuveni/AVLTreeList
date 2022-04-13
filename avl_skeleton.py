@@ -539,66 +539,43 @@ class AVLTreeList(object):
 
     def split(self, i):
 
-        ###DEFINING HELP METHODS FOR SPLIT ###
-
-        def createT1(splitter):
-            T1 = AVLTreeList()
-            T1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
-
-            prev = splitter
-            curr = splitter.getParent()
-            while curr != None:
-                if curr.getRight() == prev:  # if we went up-left
-                    leftTree = AVLTreeList()
-                    leftTree.root = curr.getLeft() if curr.getLeft().isRealNode() else None
-                    leftTree.join(curr, T1)
-                    T1 = leftTree
-                prev = curr
-                curr = curr.getParent()
-
-            T1.firstItem = self.firstItem
-            T1.lastItem = T1.findMax()
-            return T1
-
-        def createT2(splitter):
-            T2 = AVLTreeList()
-            T2.root = splitter.getRight() if splitter.getRight().isRealNode() else None
-
-            prev = splitter
-            curr = splitter.getParent()
-            while curr != None:
-                if curr.getLeft() == prev:  # if we went up-right
-                    rightTree = AVLTreeList()
-                    rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
-                    T2.join(curr, rightTree)
-                prev = curr
-                curr = curr.getParent()
-
-            T2.lastItem = self.lastItem
-            T2.firstItem = T2.findMin()
-            return T2
-
-        ### ACTUAL RUN OF SPLIT ###
-
         splitter = self.treeSelect(i+1)
         T1 = AVLTreeList()
         T1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
+        splitter.getLeft().setParent(None)
         T2 = AVLTreeList()
         T2.root = splitter.getRight() if splitter.getRight().isRealNode() else None
+        splitter.getRight().setParent(None)
 
         prev = splitter
         curr = splitter.getParent()
 
         while curr != None:
+            parent = curr.getParent()
+            curr.setParent(None)
             if curr.getLeft() == prev:  # if we went up-right
                 rightTree = AVLTreeList()
                 rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
+                curr.getRight().setParent(None)
                 T2.join(curr, rightTree)
+            if curr.getRight() == prev:  # if we went up-left
+                leftTree = AVLTreeList()
+                leftTree.root = curr.getLeft() if curr.getLeft().isRealNode() else None
+                curr.getLeft().setParent(None)
+                leftTree.join(curr, T1)
+                T1 = leftTree
             prev = curr
-            curr = curr.getParent()
+            curr = parent
 
-        # L1 = createT1(splitter)
-        # L2 = createT2(splitter)
+        T1.firstItem = self.firstItem
+        T1.lastItem = T1.findMax()
+        T2.lastItem = self.lastItem
+        T2.firstItem = T2.findMin()
+
+        self.root = None
+        self.firstItem = None
+        self.lastItem = None
+
         return [T1, splitter.getValue(), T2]
 
     """concatenates lst to self

@@ -54,6 +54,10 @@ class testAVLList(unittest.TestCase):
         for i in range(20):
             self.assertEqual(self.twentylist[i], self.twentyTree.retrieve(i))
 
+        T = AVLTreeList()
+        T.append('a')
+        self.assertEqual(T.retrieve(0), "a")
+
     ###TESTING INSERTION###
 
     def test_insertBasic(self):
