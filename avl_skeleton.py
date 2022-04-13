@@ -464,6 +464,9 @@ class AVLTreeList(object):
             successor.completeSetRight(rightChild)
             successor.updateHeight()
             successor.updateSize()
+            nodeToBeDeleted.setLeft(None)
+            nodeToBeDeleted.setRight(None)
+            nodeToBeDeleted.setParent(None)
             return numOfBalancingOpps
 
     """returns the value of the first item in the list
@@ -547,17 +550,18 @@ class AVLTreeList(object):
     def concat(self, lst):
         if lst.empty():
             if self.empty():
-                return 0 
+                return 0
             else:
-                return self.getRoot().getHeight() + 1 
+                return self.getRoot().getHeight() + 1
         elif self.empty():
             self.firstItem = lst.firstItem
             self.lastItem = lst.lastItem
-            self.root = lst.root 
-            return self.getRoot().getHeight() + 1 
+            self.root = lst.root
+            return self.getRoot().getHeight() + 1
         else:
             connector = self.lastItem
-            heightDifference = abs(self.getRoot().getHeight() - lst.getRoot().getHeight())
+            heightDifference = abs(
+                self.getRoot().getHeight() - lst.getRoot().getHeight())
             self.delete(self.length()-1)
             self.join(connector, lst)
             return heightDifference
@@ -804,7 +808,7 @@ class AVLTreeList(object):
     @pre L1 < connector < L2
     @pre L1 and L2 is not empty"""
 
-    def join (self, connector, L2):
+    def join(self, connector, L2):
         if self.getRoot().getHeight() == L2.getRoot().getHeight():
             connector.completeSetLeft(self.root)
             connector.completeSetRight(L2.root)
@@ -813,7 +817,7 @@ class AVLTreeList(object):
 
         elif self.getRoot().getHeight() < L2.getRoot().getHeight():
             curr = L2.getRoot()
-            while curr.height > self.getRoot().getHeight(): 
+            while curr.height > self.getRoot().getHeight():
                 curr = curr.getLeft()
             currParent = curr.getParent()
             connector.completeSetLeft(self.getRoot())
@@ -830,7 +834,7 @@ class AVLTreeList(object):
             connector.completeSetLeft(curr)
             connector.completeSetRight(L2.getRoot())
             currParent.completeSetRight(connector)
-        self.lastItem = L2.lastItem    
+        self.lastItem = L2.lastItem
         connector.updateSize()
         connector.updateHeight()
         if self.root != connector:
