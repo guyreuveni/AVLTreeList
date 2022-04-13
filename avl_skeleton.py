@@ -813,7 +813,7 @@ class AVLTreeList(object):
 
         elif self.getRoot().getHeight() < L2.getRoot().getHeight():
             curr = L2.getRoot()
-            while curr.height > self.getRoot().getHeight(): 
+            while curr.getHeight() > self.getRoot().getHeight(): 
                 curr = curr.getLeft()
             currParent = curr.getParent()
             connector.completeSetLeft(self.getRoot())
@@ -823,9 +823,8 @@ class AVLTreeList(object):
 
         else:
             curr = self.getRoot()
-            while curr.height > L2.getRoot():
-                while curr.getHeight() > L2.getRoot().getHeight():
-                    curr = curr.getRight()
+            while curr.getHeight() > L2.getRoot().getHeight():
+                curr = curr.getRight()
             currParent = curr.getParent()
             connector.completeSetLeft(curr)
             connector.completeSetRight(L2.getRoot())
