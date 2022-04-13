@@ -749,6 +749,7 @@ class testAVLList(unittest.TestCase):
 
         for i in range(49):
             T.delete(0)
+            L.pop(0)
             for j in range(len(L)):
                 self.assertEqual(T.search(L[j]), j)
             self.assertEqual(-1, T.search(-20))

@@ -545,65 +545,8 @@ class AVLTreeList(object):
 	"""
 
     def concat(self, lst):
-<<<<<<< HEAD
-        if lst.empty():
-            return self.length()
-        elif self.empty():
-            self.firstItem = lst.firstItem
-            self.lastItem = lst.lastItem
-            self.root = lst.root
-            return self.length()
-        else:
-            connector = self.lastItem
-            self.delete(self.length()-1)
-            heightDifference = abs(self.length() - lst.length())
-            self.join(connector, lst)
-            return heightDifference
-
-    """
-    merges two AVL Trees.
-    @type L1: AVLTreeList
-    @type connector: AVLNode
-    @type L2: AVLTreeList
-    @pre: L1 < connector < L2
-    @pre: L1 and L2 is not empty
-    """
-
-    def join(L1, connector, L2):
-        if L1.getRoot().getHeight() == L2.getRoot().getHeight():
-            connector.completeSetLeft(L1.root)
-            connector.completeSetRight(L2.root)
-            L1.root = connector
-
-        elif L1.getRoot().getHeight() < L2.getRoot().getHeight():
-            curr = L2.getRoot()
-            while curr.getHeight() > L1.getRoot().getHeight():
-                curr = curr.getLeft()
-            currParent = curr.getParent()
-            connector.completeSetLeft(L1.getRoot())
-            connector.completeSetRight(curr)
-            currParent.completeSetLeft(connector)
-            L1.root = L2.getRoot()
-
-        else:
-            curr = L1.getRoot()
-            while curr.getHeight() > L2.getRoot().getHeight():
-                curr = curr.getRight
-            currParent = curr.getParent()
-            connector.completeSetLeft(curr)
-            connector.completeSetRight(L2.getRoot())
-            currParent.completeSetRight(connector)
-
-        L1.lastItem = L2.lastItem
-        connector.updateSize()
-        connector.updateHeight()
-        if L1.root != connector:
-            L1.fixTreeAfterDeletionAndJoin(connector.getParent())
-
-=======
         return None
 
->>>>>>> parent of 97db4c6... Merge pull request #17 from guyreuveni/join
     """searches for a *value* in the list
 
 	@type val: str
