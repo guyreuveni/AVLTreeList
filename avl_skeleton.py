@@ -545,6 +545,7 @@ class AVLTreeList(object):
 	"""
 
     def concat(self, lst):
+<<<<<<< HEAD
         if lst.empty():
             return self.length()
         elif self.empty():
@@ -599,16 +600,28 @@ class AVLTreeList(object):
         if L1.root != connector:
             L1.fixTreeAfterDeletionAndJoin(connector.getParent())
 
+=======
+        return None
+
+>>>>>>> parent of 97db4c6... Merge pull request #17 from guyreuveni/join
     """searches for a *value* in the list
 
 	@type val: str
 	@param val: a value to be searched
 	@rtype: int
 	@returns: the first index that contains val, -1 if not found.
+    @complexity: O(n)
 	"""
 
     def search(self, val):
-        return None
+        candidate = self.firstItem
+        index = 0
+        while candidate != None:
+            if candidate.getValue() == val:
+                return index
+            index += 1
+            candidate = self.getSuccessorOf(candidate)
+        return -1
 
     """returns the root of the tree representing the list
 
@@ -633,7 +646,7 @@ class AVLTreeList(object):
 
     def treeSelect(self, i):
         if i == 1:
-            return self.first
+            return self.firstItem
         if i == self.length():
             return self.lastItem
 
@@ -680,12 +693,12 @@ class AVLTreeList(object):
 
         if node.getRight().isRealNode():
             curr = node.getRight()
-            while curr.isRealNode():
+            while curr.getLeft().isRealNode():
                 curr = curr.getLeft()
             return curr
 
         curr = node.getParent()
-        while curr.isRealNode and curr.getRight() == node:
+        while (curr != None) and (curr.getRight() == node):
             node = curr
             curr = curr.getParent()
         return curr
@@ -699,7 +712,7 @@ class AVLTreeList(object):
 	"""
 
     def getPredecessorOf(self, node):
-        if node == self.first():
+        if node == self.firstItem:
             return None
         if node.getLeft().isRealNode():
             curr = node.getLeft()
