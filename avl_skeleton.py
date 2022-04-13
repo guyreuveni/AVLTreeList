@@ -77,7 +77,7 @@ class AVLNode(object):
 
     """returns the balnce factor
 
-    @pre: self is a real node 
+    @pre: self is a real node
 	@rtype: int
 	@returns: the balance factor of self
 	"""
@@ -214,8 +214,8 @@ class AVLTreeList(object):
 	@pre: 0 <= i < self.length()
 	@param i: index in the list
 	@rtype: str
-	@returns: the the value of the i'th item in the list. 
-                unless i is not a legal index on this list, then the return value would be None 
+	@returns: the the value of the i'th item in the list.
+                unless i is not a legal index on this list, then the return value would be None
 	"""
 
     def retrieve(self, i):
@@ -275,9 +275,9 @@ class AVLTreeList(object):
 
         """inserts node as a leaf without making any height or size adjustments.
         the adjustments will be done in main insert function
-        
+
         @type currLeaf: AVLNode
-        @param currLeaf: the leaf that we want to insert a new son to 
+        @param currLeaf: the leaf that we want to insert a new son to
         @type newLeaf: AVLNode
         @param newLeaf: the node that we want to insert as a new leaf
         @type direction: string
@@ -296,10 +296,10 @@ class AVLTreeList(object):
             newLeaf.completeSetRight(virtualSon)
             newLeaf.completeSetLeft(AVLNode())
 
-        """performs rotation on AVL criminal subtree so that self will be legal AVL tree 
+        """performs rotation on AVL criminal subtree so that self will be legal AVL tree
             @type node: AVLNode
             @param node: the root of the AVL criminal subtree
-            return: int 
+            return: int
             returns: number of rebalancing operation that has been done
         """
 
@@ -464,6 +464,9 @@ class AVLTreeList(object):
             successor.completeSetRight(rightChild)
             successor.updateHeight()
             successor.updateSize()
+            nodeToBeDeleted.setLeft(None)
+            nodeToBeDeleted.setRight(None)
+            nodeToBeDeleted.setParent(None)
             return numOfBalancingOpps
 
     """returns the value of the first item in the list
@@ -531,10 +534,57 @@ class AVLTreeList(object):
 	@rtype: list
 	@returns: a list [left, val, right], where left is an AVLTreeList representing the list until index i-1,
 	right is an AVLTreeList representing the list from index i+1, and val is the value at the i'th index.
+    @complexity: O(logn)
 	"""
 
     def split(self, i):
-        return None
+
+        splitter = self.treeSelect(i+1)
+        T1 = AVLTreeList()
+        T1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
+        splitter.getLeft().setParent(None)
+        T2 = AVLTreeList()
+        T2.root = splitter.getRight() if splitter.getRight().isRealNode() else None
+        splitter.getRight().setParent(None)
+
+        prev = splitter
+        curr = splitter.getParent()
+
+        while curr != None:
+            parent = curr.getParent()
+            curr.setParent(None)
+            if curr.getLeft() == prev:  # if we went up-right
+                rightTree = AVLTreeList()
+                rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
+                curr.getRight().setParent(None)
+                T2.join(curr, rightTree)
+            if curr.getRight() == prev:  # if we went up-left
+                leftTree = AVLTreeList()
+                leftTree.root = curr.getLeft() if curr.getLeft().isRealNode() else None
+                curr.getLeft().setParent(None)
+                leftTree.join(curr, T1)
+                T1 = leftTree
+            prev = curr
+            curr = parent
+
+        if not T1.empty():
+            T1.firstItem = self.firstItem
+            T1.lastItem = T1.findMax()
+        else:
+            T1.firstItem = None
+            T1.lastItem = None
+        if not T2.empty():
+            T2.lastItem = self.lastItem
+            T2.firstItem = T2.findMin()
+        else:
+            T2.lastItem = None
+            T2.firstItem = None
+
+        self.root = None
+        self.firstItem = None
+        self.lastItem = None
+
+        return [T1, splitter.getValue(), T2]
 
     """concatenates lst to self
 
@@ -547,17 +597,18 @@ class AVLTreeList(object):
     def concat(self, lst):
         if lst.empty():
             if self.empty():
-                return 0 
+                return 0
             else:
-                return self.getRoot().getHeight() + 1 
+                return self.getRoot().getHeight() + 1
         elif self.empty():
             self.firstItem = lst.firstItem
             self.lastItem = lst.lastItem
-            self.root = lst.root 
-            return self.getRoot().getHeight() + 1 
+            self.root = lst.root
+            return self.getRoot().getHeight() + 1
         else:
             connector = self.lastItem
-            heightDifference = abs(self.getRoot().getHeight() - lst.getRoot().getHeight())
+            heightDifference = abs(
+                self.getRoot().getHeight() - lst.getRoot().getHeight())
             self.delete(self.length()-1)
             self.join(connector, lst)
             return heightDifference
@@ -632,7 +683,6 @@ class AVLTreeList(object):
 
     def findSmallestSubTreeOfSize(self, k):
         curr = self.firstItem
-        self.printt()
         while (curr.getSize() < k):
             curr = curr.getParent()
         return curr
@@ -804,7 +854,7 @@ class AVLTreeList(object):
     @pre L1 < connector < L2
     @pre L1 and L2 is not empty"""
 
-    def join (self, connector, L2):
+    def join(self, connector, L2):
         if self.getRoot().getHeight() == L2.getRoot().getHeight():
             connector.completeSetLeft(self.root)
             connector.completeSetRight(L2.root)
@@ -813,7 +863,7 @@ class AVLTreeList(object):
 
         elif self.getRoot().getHeight() < L2.getRoot().getHeight():
             curr = L2.getRoot()
-            while curr.getHeight() > self.getRoot().getHeight(): 
+            while curr.getHeight() > self.getRoot().getHeight():
                 curr = curr.getLeft()
             currParent = curr.getParent()
             connector.completeSetLeft(self.getRoot())
@@ -829,13 +879,43 @@ class AVLTreeList(object):
             connector.completeSetLeft(curr)
             connector.completeSetRight(L2.getRoot())
             currParent.completeSetRight(connector)
-        self.lastItem = L2.lastItem    
+        self.lastItem = L2.lastItem
         connector.updateSize()
         connector.updateHeight()
         if self.root != connector:
             self.fixTreeAfterDeletionAndJoin(connector.getParent())
 
-    # print tree functions
+    """
+    returns the node which contains the last item in the AVLtreelist not using the pointer to it. if empty returns None.
+
+    @rtype: AVLNode
+    @complexity: O(logn)
+    """
+
+    def findMax(self):
+        curr = self.getRoot()
+        if curr == None:
+            return None
+        while(curr.getRight().isRealNode()):
+            curr = curr.getRight()
+        return curr
+
+    """
+    returns the node which contains the first item in the AVLtreelist not using the pointer to it. if empty returns None.
+
+    @rtype: AVLNode
+    @complexity: O(logn)
+    """
+
+    def findMin(self):
+        curr = self.getRoot()
+        if curr == None:
+            return None
+        while (curr.getLeft().isRealNode()):
+            curr = curr.getLeft()
+        return curr
+
+    ### PRINT TREE FUNCTIONS ###
 
     def printt(self):
         out = ""

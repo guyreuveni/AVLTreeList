@@ -54,12 +54,16 @@ class testAVLList(unittest.TestCase):
         self.assertIsNone(self.twentyTree.retrieve(-1))
         for i in range(20):
             self.assertEqual(self.twentylist[i], self.twentyTree.retrieve(i))
+        T = AVLTreeList()
+        T.append('a')
+        self.assertEqual(T.retrieve(0), "a")
 
     def check_first(self, tree, lst):
         self.assertEqual(tree.first(), lst[0])
 
     def check_last(self, tree, lst):
         self.assertEqual(tree.last(), lst[-1])
+
 
     ###TESTING INSERTION###
 
@@ -407,6 +411,11 @@ class testAVLList(unittest.TestCase):
             self.compare_with_list_by_retrieve(T, L)
             self.check_first(T, L)
             self.check_last(T, L)
+
+    ### TESTING SPLIT ###
+
+    def test_split_basic(self):
+        pass
 
     ### TESTING FAMILTY ### (testing that node == node.getchild.gerparent)#
 
@@ -758,6 +767,120 @@ class testAVLList(unittest.TestCase):
             else:
                 T.delete(T.length()//2)
             self.in_order(T, T.getRoot(), self.check_height)
+
+    ### TESTING BALACNE FACTOR ###
+
+    def check_BF(self, node, tree):
+        self.assertTrue(abs(node.getBf()) < 2)
+
+    def test_BF_after_insertion_at_start(self):
+        T2 = AVLTreeList()
+
+        for i in range(50):
+            T2.insert(0, i)
+            self.in_order(T2, T2.getRoot(), self.check_BF)
+
+    def test_BF_after_deletion_from_start(self):
+        T = AVLTreeList()
+        for i in range(50):
+            T.insert(0, i)
+
+        for i in range(49):
+            T.delete(0)
+            self.in_order(T, T.getRoot(), self.check_BF)
+
+    def test_BF_after_insertion_at_end(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(T3.length(), i)
+            self.in_order(T3, T3.getRoot(), self.check_BF)
+
+    def test_BF_after_deletion_from_end(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(T3.length(), i)
+
+        for i in range(49):
+            T3.delete(T3.length()-1)
+            self.in_order(T3, T3.getRoot(), self.check_BF)
+
+    def test_BF_after_insertion_at_middle(self):
+        T4 = AVLTreeList()
+
+        for i in range(50):
+            T4.insert(i//2, i)
+            self.in_order(T4, T4.getRoot(), self.check_BF)
+
+    def test_BF_after_deletion_from_middle(self):
+        T3 = AVLTreeList()
+
+        for i in range(50):
+            T3.insert(0, i)
+
+        for i in range(49):
+            T3.delete(i//2)
+            self.in_order(T3, T3.getRoot(), self.check_BF)
+
+    def test_BF_after_insertion_alternatly(self):
+        T5 = AVLTreeList()
+
+        for i in range(200):
+            if i % 5 == 0:
+                T5.insert(0, i)
+            elif i % 5 == 1:
+                T5.insert(T5.length(), i)
+            elif i % 5 == 2:
+                T5.insert(i//2, i)
+            elif i % 5 == 3:
+                T5.insert(i//3, i)
+            else:
+                T5.insert(i//7, i)
+            self.in_order(T5, T5.getRoot(), self.check_BF)
+
+    def test_BF_after_deletion_alternatly(self):
+        T = AVLTreeList()
+
+        for i in range(100):
+            T.insert(0, i)
+
+        for i in range(99):
+            if i % 5 == 0:
+                T.delete(0)
+            elif i % 5 == 1:
+                T.delete(T.length()-1)
+            elif i % 5 == 2:
+                T.delete((T.length()-1)//2)
+            elif i % 5 == 3:
+                T.delete((T.length()-1)//3)
+            else:
+                T.delete((T.length()-1)//7)
+            self.in_order(T, T.getRoot(), self.check_BF)
+
+    def test_BF_after_deleting_and_inserting_small(self):
+        T = AVLTreeList()
+
+        for i in range(20):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+            self.in_order(T, T.getRoot(), self.check_BF)
+
+    def test_BF_after_deleting_and_inserting_big(self):
+        T = AVLTreeList()
+
+        for i in range(500):
+            if i % 3 == 0:
+                T.insert(T.length()//2, i)
+            elif i % 3 == 1:
+                T.insert(0, i)
+            else:
+                T.delete(T.length()//2)
+            self.in_order(T, T.getRoot(), self.check_BF)
 
     ###TESTING SEARCH###
 
