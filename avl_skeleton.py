@@ -333,7 +333,7 @@ class AVLTreeList(object):
                 self.lastItem = newNode
 
             else:
-                insertLeaf(self.firstItem, newNode, "left")
+                insertLeaf(self.first, newNode, "left")
             self.firstItem = newNode
 
         elif i == self.length():  # inserting the maximum
@@ -545,26 +545,59 @@ class AVLTreeList(object):
 	"""
 
     def concat(self, lst):
-        return None
+        connector = self.lastItem
+        self.delete(self.length())
+        self.join(connector, lst)
+        return abs(self.length() - lst.length())
+    
+    """
+    merges two AVL Trees.
+    @type L1: AVLTreeList
+    @type connector: AVLNode
+    @type L2: AVLTreeList
+    @pre: L1 < connector < L2 """
 
+    def join(L1, connector, L2):
+        if L1.getRoot().getHeight() == L2.getRoot().getHeight():
+            L1.root = connector
+            connector.completeSetLeft(L1.root)
+            connector.completeSetRight(L2.root)
+
+        elif L1.getRoot().getHeight() < L2.getRoot().getHeight():
+            curr = L2.getRoot()
+            while curr.height > L1.getRoot().getHeight(): 
+                curr = curr.getLeft()
+            currParent = curr.getParent()
+            connector.completeSetLeft(L1.getRoot())
+            connector.completeSetRight(curr)
+            currParent.completeSetLeft(connector)
+
+        else:
+            curr = L1.getRoot()
+            while curr.height > L2.getRoot():
+                curr = curr.getRight
+            currParent = curr.getParent()
+            connector.completeSetLeft(curr)
+            connector.completeSetRight(L2.getRoot())
+            currParent.completeSetRight(connector)
+
+        L1.lastItem = L2.lastItem    
+        connector.updateSize()
+        connector.updateHeight()
+        if L1.root != connector:
+            L1.fixTreeAfterDeletion(connector.getParent())
+
+                             
     """searches for a *value* in the list
 
 	@type val: str
 	@param val: a value to be searched
 	@rtype: int
 	@returns: the first index that contains val, -1 if not found.
-    @complexity: O(n)
 	"""
 
     def search(self, val):
-        candidate = self.firstItem
-        index = 0
-        while candidate != None:
-            if candidate.getValue() == val:
-                return index
-            index += 1
-            candidate = self.getSuccessorOf(candidate)
-        return -1
+        return None
 
     """returns the root of the tree representing the list
 
@@ -589,7 +622,7 @@ class AVLTreeList(object):
 
     def treeSelect(self, i):
         if i == 1:
-            return self.firstItem
+            return self.first
         if i == self.length():
             return self.lastItem
 
@@ -636,12 +669,12 @@ class AVLTreeList(object):
 
         if node.getRight().isRealNode():
             curr = node.getRight()
-            while curr.getLeft().isRealNode():
+            while curr.isRealNode():
                 curr = curr.getLeft()
             return curr
 
         curr = node.getParent()
-        while (curr != None) and (curr.getRight() == node):
+        while curr.isRealNode and curr.getRight() == node:
             node = curr
             curr = curr.getParent()
         return curr
@@ -655,7 +688,7 @@ class AVLTreeList(object):
 	"""
 
     def getPredecessorOf(self, node):
-        if node == self.firstItem:
+        if node == self.first():
             return None
         if node.getLeft().isRealNode():
             curr = node.getLeft()
