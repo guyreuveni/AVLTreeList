@@ -567,10 +567,18 @@ class AVLTreeList(object):
             prev = curr
             curr = parent
 
-        T1.firstItem = self.firstItem
-        T1.lastItem = T1.findMax()
-        T2.lastItem = self.lastItem
-        T2.firstItem = T2.findMin()
+        if not T1.empty():
+            T1.firstItem = self.firstItem
+            T1.lastItem = T1.findMax()
+        else:
+            T1.firstItem = None
+            T1.lastItem = None
+        if not T2.empty():
+            T2.lastItem = self.lastItem
+            T2.firstItem = T2.findMin()
+        else:
+            T2.lastItem = None
+            T2.firstItem = None
 
         self.root = None
         self.firstItem = None
