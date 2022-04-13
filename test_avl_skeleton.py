@@ -369,6 +369,11 @@ class testAVLList(unittest.TestCase):
             self.compare_with_list_by_in_order(T, L)
             self.compare_with_list_by_retrieve(T, L)
 
+    ### TESTING SPLIT ###
+
+    def test_split_basic(self):
+        pass
+
     ### TESTING FAMILTY ### (testing that node == node.getchild.gerparent)#
 
     def check_family(self, node, tree):
