@@ -333,7 +333,7 @@ class AVLTreeList(object):
                 self.lastItem = newNode
 
             else:
-                insertLeaf(self.first, newNode, "left")
+                insertLeaf(self.firstItem, newNode, "left")
             self.firstItem = newNode
 
         elif i == self.length():  # inserting the maximum
@@ -508,7 +508,7 @@ class AVLTreeList(object):
                     envList2Arr(node.getRight(), lst)
             return lst
         res = list()
-        if self.empty:
+        if self.empty():
             return res
         return envList2Arr(self.getRoot(), res)
 
@@ -545,36 +545,49 @@ class AVLTreeList(object):
 	"""
 
     def concat(self, lst):
-        connector = self.lastItem
-        self.delete(self.length())
-        self.join(connector, lst)
-        return abs(self.length() - lst.length())
+        if lst.empty():
+            return self.length()
+        elif self.empty():
+            self.firstItem = lst.firstItem
+            self.lastItem = lst.lastItem
+            self.root = lst.root 
+            return self.length()
+        else:
+            connector = self.lastItem
+            self.delete(self.length()-1)
+            heightDifference = abs(self.length() - lst.length())
+            self.join(connector, lst)
+            return heightDifference
     
     """
     merges two AVL Trees.
     @type L1: AVLTreeList
     @type connector: AVLNode
     @type L2: AVLTreeList
-    @pre: L1 < connector < L2 """
+    @pre: L1 < connector < L2
+    @pre: L1 and L2 is not empty
+    """
 
     def join(L1, connector, L2):
         if L1.getRoot().getHeight() == L2.getRoot().getHeight():
-            L1.root = connector
             connector.completeSetLeft(L1.root)
             connector.completeSetRight(L2.root)
+            L1.root = connector
+
 
         elif L1.getRoot().getHeight() < L2.getRoot().getHeight():
             curr = L2.getRoot()
-            while curr.height > L1.getRoot().getHeight(): 
+            while curr.getHeight() > L1.getRoot().getHeight(): 
                 curr = curr.getLeft()
             currParent = curr.getParent()
             connector.completeSetLeft(L1.getRoot())
             connector.completeSetRight(curr)
             currParent.completeSetLeft(connector)
+            L1.root = L2.getRoot()
 
         else:
             curr = L1.getRoot()
-            while curr.height > L2.getRoot():
+            while curr.getHeight() > L2.getRoot().getHeight():
                 curr = curr.getRight
             currParent = curr.getParent()
             connector.completeSetLeft(curr)
@@ -585,7 +598,7 @@ class AVLTreeList(object):
         connector.updateSize()
         connector.updateHeight()
         if L1.root != connector:
-            L1.fixTreeAfterDeletion(connector.getParent())
+            L1.fixTreeAfterDeletionAndJoin(connector.getParent())
 
                              
     """searches for a *value* in the list
