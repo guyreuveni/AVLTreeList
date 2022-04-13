@@ -23,10 +23,11 @@ class testAVLList(unittest.TestCase):
         twentyTree.append(i)
 
     def in_order(self, tree, node, func):
-        if node.isRealNode():
-            self.in_order(tree, node.getLeft(), func)
-            func(node, tree)
-            self.in_order(tree, node.getRight(), func)
+        if node != None:
+            if node.isRealNode():
+                self.in_order(tree, node.getLeft(), func)
+                func(node, tree)
+                self.in_order(tree, node.getRight(), func)
 
     def compare_with_list_by_in_order(self, tree, lst):
         def rec(node, cnt, lst):
@@ -37,7 +38,10 @@ class testAVLList(unittest.TestCase):
                 rec(node.getRight(), cnt, lst)
 
         cnt = [0]
-        rec(tree.getRoot(), cnt, lst)
+        if not tree.empty():
+            rec(tree.getRoot(), cnt, lst)
+        else:
+            self.assertEqual(len(lst), 0)
 
     def compare_with_list_by_retrieve(self, tree, lst):
         for i in range(max(len(lst), tree.length())):
@@ -59,10 +63,18 @@ class testAVLList(unittest.TestCase):
         self.assertEqual(T.retrieve(0), "a")
 
     def check_first(self, tree, lst):
-        self.assertEqual(tree.first(), lst[0])
+        if not tree.empty():
+            self.assertEqual(tree.first(), lst[0])
+        else:
+            self.assertEqual(len(lst), 0)
+            self.assertIsNone(tree.first())
 
     def check_last(self, tree, lst):
-        self.assertEqual(tree.last(), lst[-1])
+        if not tree.empty():
+            self.assertEqual(tree.last(), lst[-1])
+        else:
+            self.assertEqual(len(lst), 0)
+            self.assertIsNone(tree.last())
 
     ###TESTING INSERTION###
 
@@ -410,11 +422,6 @@ class testAVLList(unittest.TestCase):
             self.compare_with_list_by_retrieve(T, L)
             self.check_first(T, L)
             self.check_last(T, L)
-
-    ### TESTING SPLIT ###
-
-    def test_split_basic(self):
-        pass
 
     ### TESTING FAMILTY ### (testing that node == node.getchild.gerparent)#
 
@@ -1069,7 +1076,7 @@ class testAVLList(unittest.TestCase):
         LR2.append(i+10)
 
     # def test_compare_treelist_and_list(self):
-        #self.assertEqual (self.TR1.listToArray(),self.LR1)
+        # self.assertEqual (self.TR1.listToArray(),self.LR1)
 
     TR1.concat(TR2)
     LR3 = LR1 + LR2
@@ -1221,21 +1228,163 @@ class testAVLList(unittest.TestCase):
         for i in range(1):
             T3.append(i)
         self.assertEqual(T3.concat(T4), 1)
-    
-    def test_assert_height_difference_non_empty_lists_big(self): 
+
+    def test_assert_height_difference_non_empty_lists_big(self):
         T1 = AVLTreeList()
         T2 = AVLTreeList()
         for i in range(10):
             T1.append(i)
         for i in range(5):
             T2.append(i)
-        self.assertEqual(abs(T1.getRoot().getHeight()-T2.getRoot().getHeight()),T1.concat(T2))
-        self.assertEqual(abs(T1.getTreeHeight()-T2.getTreeHeight()), T1.concat(T2))
+        self.assertEqual(abs(T1.getRoot().getHeight() -
+                             T2.getRoot().getHeight()), T1.concat(T2))
+        self.assertEqual(
+            abs(T1.getTreeHeight()-T2.getTreeHeight()), T1.concat(T2))
         T3 = AVLTreeList()
         T4 = AVLTreeList()
         for i in range(10):
             T4.append(i)
         for i in range(5):
             T3.append(i)
-        self.assertEqual(abs(T3.getTreeHeight()-T4.getTreeHeight()),T3.concat(T4))
-        self.assertEqual( abs(T3.getRoot().getHeight()-T4.getRoot().getHeight()), T3.concat(T4))
+        self.assertEqual(
+            abs(T3.getTreeHeight()-T4.getTreeHeight()), T3.concat(T4))
+        self.assertEqual(abs(T3.getRoot().getHeight() -
+                             T4.getRoot().getHeight()), T3.concat(T4))
+
+    ### TESTING SPLIT ###
+    def check_root(self, tree):
+        if not tree.empty():
+            self.assertIsNone(tree.getRoot().getParent())
+
+    def check_split(self, lst, res, i):
+        self.assertEqual(lst[i], res[1])
+        L1 = lst[:i]
+        L2 = lst[i+1:]
+
+        ##checks values##
+        self.assertEqual(res[0].listToArray(), L1)
+        self.compare_with_list_by_retrieve(res[0], L1)
+        self.compare_with_list_by_in_order(res[0], L1)
+        self.assertEqual(res[2].listToArray(), L2)
+        self.compare_with_list_by_retrieve(res[2], L2)
+        self.compare_with_list_by_in_order(res[2], L2)
+
+        ##checks fields##
+        self.check_first(res[0], L1)
+        self.check_last(res[0], L1)
+        self.in_order(res[0], res[0].getRoot(), self.check_family)
+        self.in_order(res[0], res[0].getRoot(), self.check_height)
+        self.in_order(res[0], res[0].getRoot(), self.check_size)
+        self.in_order(res[0], res[0].getRoot(), self.check_BF)
+        self.check_root(res[0])
+
+        self.check_first(res[2], L2)
+        self.check_last(res[2], L2)
+        self.in_order(res[2], res[2].getRoot(), self.check_family)
+        self.in_order(res[2], res[2].getRoot(), self.check_height)
+        self.in_order(res[2], res[2].getRoot(), self.check_size)
+        self.in_order(res[2], res[2].getRoot(), self.check_BF)
+        self.check_root(res[2])
+
+    def test_split_basic(self):
+        L = []
+        T = AVLTreeList()
+
+        for i in range(10):
+            L.append(i)
+            T.append(i)
+
+        res = T.split(5)
+        self.check_split(L, res, 5)
+
+    def test_split_basic_in_range(self):
+        for j in range(10):
+            print(j)
+            L = []
+            T = AVLTreeList()
+
+            for i in range(10):
+                L.append(i)
+                T.append(i)
+
+            res = T.split(j)
+            self.check_split(L, res, j)
+
+    def test_split_small(self):
+        T = AVLTreeList()
+        T.append('a')
+        L = ['a']
+        res = T.split(0)
+        self.check_split(L, res, 0)
+
+        for i in range(2):
+            T = AVLTreeList()
+            T.append('a')
+            T.append('b')
+            L = ['a', 'b']
+            res = T.split(i)
+            self.check_split(L, res, i)
+
+    def test_split_big(self):
+        for j in range(100):
+            if j % 10 == 0:
+                L = []
+                T = AVLTreeList()
+
+                for i in range(100):
+                    L.append(i*17)
+                    T.append(i*17)
+
+                res = T.split(j)
+                self.check_split(L, res, j)
+
+    def test_split_big2(self):
+        T = AVLTreeList()
+        L = []
+        for i in range(2000):
+            L.append(i*17)
+            T.append(i*17)
+
+        res = T.split(1319)
+        self.check_split(L, res, 1319)
+
+    def test_search_after_split(self):
+        for j in range(100):
+            if j % 10 == 0:
+                L = []
+                T = AVLTreeList()
+
+                for i in range(100):
+                    L.append(i)
+                    T.append(i)
+
+                res = T.split(j)
+
+                T1 = res[0]
+                L1 = L[:j]
+                T2 = res[2]
+                L2 = L[j+1:]
+
+                for i in range(100):
+                    if i % 3 == 0:
+                        T1.insert(T1.length()//2, i+100)
+                        L1.insert(len(L1)//2, i+100)
+                        T2.insert(T2.length()//2, i+100)
+                        L2.insert(len(L2)//2, i+100)
+                    elif i % 3 == 1:
+                        T1.insert(0, i+100)
+                        L1.insert(0, i+100)
+                        T2.insert(0, i+100)
+                        L2.insert(0, i+100)
+                    else:
+                        T1.delete(T1.length()//2)
+                        L1.pop(len(L1)//2)
+                        T2.delete(T2.length()//2)
+                        L2.pop(len(L2)//2)
+                    for j in range(len(L1)):
+                        self.assertEqual(T1.search(L1[j]), j)
+                    for j in range(len(L2)):
+                        self.assertEqual(T2.search(L2[j]), j)
+
+                    self.assertEqual(-1, T1.search(-20))
+                    self.assertEqual(-1, T2.search(-20))
