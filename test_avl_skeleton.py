@@ -64,7 +64,6 @@ class testAVLList(unittest.TestCase):
     def check_last(self, tree, lst):
         self.assertEqual(tree.last(), lst[-1])
 
-
     ###TESTING INSERTION###
 
     def test_insertBasic(self):
@@ -1101,9 +1100,9 @@ class testAVLList(unittest.TestCase):
         self.check_first(T1, L3)
         self.check_last(T1, L3)
         self.assertEqual(T1.listToArray(), L3)
-        self.in_order(self.T1, self.T1.getRoot(), self.check_BF)
-        self.in_order(self.T1, self.T1.getRoot(), self.check_height)
-        self.in_order(self.T1, self.T1.getRoot(), self.check_size)
+        self.in_order(T1, T1.getRoot(), self.check_BF)
+        self.in_order(T1, T1.getRoot(), self.check_height)
+        self.in_order(T1, T1.getRoot(), self.check_size)
         T3 = AVLTreeList()
         T4 = AVLTreeList()
         L3 = list()
@@ -1121,9 +1120,9 @@ class testAVLList(unittest.TestCase):
         self.check_first(T3, L5)
         self.check_last(T3, L5)
         self.assertEqual(T3.listToArray(), L5)
-        self.in_order(self.T3, self.T3.getRoot(), self.check_BF)
-        self.in_order(self.T3, self.T3.getRoot(), self.check_height)
-        self.in_order(self.T3, self.T3.getRoot(), self.check_size)
+        self.in_order(T3, T3.getRoot(), self.check_BF)
+        self.in_order(T3, T3.getRoot(), self.check_height)
+        self.in_order(T3, T3.getRoot(), self.check_size)
 
     def test_compare_concatinated_treelists_and_list_small(self):
         T1 = AVLTreeList()
