@@ -327,18 +327,25 @@ class AVLTreeList(object):
         newNode = AVLNode(val)
         if i == 0:  # inserting the minimum
             if self.empty():  # inserting the root
-                self.root = (newNode)
+                self.root = newNode
                 newNode.completeSetLeft(AVLNode())
                 newNode.completeSetRight(AVLNode())
                 self.lastItem = newNode
+                self.firstItem = newNode
 
             else:
-                insertLeaf(self.firstItem, newNode, "left")
-            self.firstItem = newNode
+                if self.firstItem == None:  # handling mikre katze for split method which during its run the sub-trees don't have pointers to first and last
+                    insertLeaf(self.findMin(), newNode, "left")
+                else:
+                    insertLeaf(self.firstItem, newNode, "left")
+                    self.firstItem = newNode
 
         elif i == self.length():  # inserting the maximum
-            insertLeaf(self.lastItem, newNode, "right")
-            self.lastItem = newNode
+            if self.lastItem == None:
+                insertLeaf(self.findMax(), newNode, "right")
+            else:
+                insertLeaf(self.lastItem, newNode, "right")
+                self.lastItem = newNode
 
         else:
             curr = self.treeSelect(i+1)
@@ -538,7 +545,6 @@ class AVLTreeList(object):
 	"""
 
     def split(self, i):
-
         splitter = self.treeSelect(i+1)
         T1 = AVLTreeList()
         T1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
@@ -600,7 +606,7 @@ class AVLTreeList(object):
             self.firstItem = lst.firstItem
             self.lastItem = lst.lastItem
             self.root = lst.getRoot()
-        else:    
+        else:
             connector = self.lastItem
             self.delete(self.length()-1)
             self.join(connector, lst)
@@ -917,10 +923,10 @@ class AVLTreeList(object):
         while (curr.getLeft().isRealNode()):
             curr = curr.getLeft()
         return curr
-    
+
     def getTreeHeight(self):
         if self.empty():
-            return -1 
+            return -1
         else:
             return self.getRoot().getHeight()
 
