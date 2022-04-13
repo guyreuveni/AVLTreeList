@@ -595,23 +595,16 @@ class AVLTreeList(object):
 	"""
 
     def concat(self, lst):
-        if lst.empty():
-            if self.empty():
-                return 0
-            else:
-                return self.getRoot().getHeight() + 1
-        elif self.empty():
+        heightDifference = abs(self.getTreeHeight() - lst.getTreeHeight())
+        if self.empty():
             self.firstItem = lst.firstItem
             self.lastItem = lst.lastItem
-            self.root = lst.root
-            return self.getRoot().getHeight() + 1
-        else:
+            self.root = lst.getRoot()
+        else:    
             connector = self.lastItem
-            heightDifference = abs(
-                self.getRoot().getHeight() - lst.getRoot().getHeight())
             self.delete(self.length()-1)
             self.join(connector, lst)
-            return heightDifference
+        return heightDifference
 
     """searches for a *value* in the list
 
@@ -852,10 +845,20 @@ class AVLTreeList(object):
     @type connector: AVL node
     @type L2: AVL tree
     @pre L1 < connector < L2
-    @pre L1 and L2 is not empty"""
+    @pre connector.isRealNode()"""
 
     def join(self, connector, L2):
-        if self.getRoot().getHeight() == L2.getRoot().getHeight():
+        if L2.empty():
+            self.append(connector.getValue())
+            return
+        elif self.empty():
+            L2.insert(0, connector.getValue())
+            self.firstItem = L2.firstItem
+            self.lastItem = L2.lastItem
+            self.root = L2.root
+            return
+
+        elif self.getRoot().getHeight() == L2.getRoot().getHeight():
             connector.completeSetLeft(self.root)
             connector.completeSetRight(L2.root)
             connector.setParent(None)
@@ -914,6 +917,12 @@ class AVLTreeList(object):
         while (curr.getLeft().isRealNode()):
             curr = curr.getLeft()
         return curr
+    
+    def getTreeHeight(self):
+        if self.empty():
+            return -1 
+        else:
+            return self.getRoot().getHeight()
 
     ### PRINT TREE FUNCTIONS ###
 

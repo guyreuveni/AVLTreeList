@@ -1221,3 +1221,21 @@ class testAVLList(unittest.TestCase):
         for i in range(1):
             T3.append(i)
         self.assertEqual(T3.concat(T4), 1)
+    
+    def test_assert_height_difference_non_empty_lists_big(self): 
+        T1 = AVLTreeList()
+        T2 = AVLTreeList()
+        for i in range(10):
+            T1.append(i)
+        for i in range(5):
+            T2.append(i)
+        self.assertEqual(abs(T1.getRoot().getHeight()-T2.getRoot().getHeight()),T1.concat(T2))
+        self.assertEqual(abs(T1.getTreeHeight()-T2.getTreeHeight()), T1.concat(T2))
+        T3 = AVLTreeList()
+        T4 = AVLTreeList()
+        for i in range(10):
+            T4.append(i)
+        for i in range(5):
+            T3.append(i)
+        self.assertEqual(abs(T3.getTreeHeight()-T4.getTreeHeight()),T3.concat(T4))
+        self.assertEqual( abs(T3.getRoot().getHeight()-T4.getRoot().getHeight()), T3.concat(T4))
