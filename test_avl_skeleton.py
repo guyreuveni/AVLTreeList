@@ -1388,3 +1388,9 @@ class testAVLList(unittest.TestCase):
 
                     self.assertEqual(-1, T1.search(-20))
                     self.assertEqual(-1, T2.search(-20))
+
+    def test_num_of_balnce_ops(self):
+        T = AVLTreeList()
+        self.assertEqual(T.append(3), 0)
+        self.assertEqual(T.insert(0, 1), 1)
+        self.assertEqual(T.insert(1,2), 3)
