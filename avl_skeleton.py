@@ -663,6 +663,7 @@ class AVLTreeList(object):
 	@param lst: a list to be concatenated after self
 	@rtype: int
 	@returns: the absolute value of the difference between the height of the AVL trees joined
+    @complexity: O(logn) when n is the mutual length of self and lst
 	"""
 
     def concat(self, lst):
