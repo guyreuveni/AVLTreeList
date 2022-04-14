@@ -1388,3 +1388,20 @@ class testAVLList(unittest.TestCase):
 
                     self.assertEqual(-1, T1.search(-20))
                     self.assertEqual(-1, T2.search(-20))
+
+    def test_num_of_balnce_ops(self):
+        T = AVLTreeList()
+        self.assertEqual(T.append(3), 0)
+        self.assertEqual(T.insert(0, 1), 1)
+        self.assertEqual(T.insert(1, 2), 3)
+
+    def test_successor_and_predeccessor(self):
+        T = AVLTreeList()
+        T.append(0)
+        T.append(1)
+
+        self.assertEqual(T.getSuccessorOf(T.getRoot()).getValue(), 1)
+        self.assertEqual(T.getSuccessorOf(
+            T.getRoot().getRight()), None)
+        self.assertEqual(T.getPredecessorOf(
+            T.getRoot().getRight()).getValue(), 0)
