@@ -1393,4 +1393,15 @@ class testAVLList(unittest.TestCase):
         T = AVLTreeList()
         self.assertEqual(T.append(3), 0)
         self.assertEqual(T.insert(0, 1), 1)
-        self.assertEqual(T.insert(1,2), 3)
+        self.assertEqual(T.insert(1, 2), 3)
+
+    def test_successor_and_predeccessor(self):
+        T = AVLTreeList()
+        T.append(0)
+        T.append(1)
+
+        self.assertEqual(T.getSuccessorOf(T.getRoot()).getValue(), 1)
+        self.assertEqual(T.getSuccessorOf(
+            T.getRoot().getRight()), None)
+        self.assertEqual(T.getPredecessorOf(
+            T.getRoot().getRight()).getValue(), 0)

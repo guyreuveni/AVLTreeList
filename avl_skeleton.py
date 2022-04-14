@@ -259,7 +259,7 @@ class AVLTreeList(object):
 	@pre: 0 <= i <= self.length()
 	@param i: The intended index in the list to which we insert val
 	@type val: str
-	@param val: the value we inserts to the list
+	@param val: the value we insert to the list
 	@rtype: int
 	@returns: the number of rebalancing operation due to AVL rebalancing
     @complexity: O(logn)
@@ -401,11 +401,21 @@ class AVLTreeList(object):
 	@param i: The intended index in the list to be deleted
 	@rtype: int
 	@returns: the number of rebalancing operation due to AVL rebalancing
+    @complexity: O(logn)
 	"""
 
     def delete(self, i):
 
         ### DEFINING INNER-HELP METHODS FOR DELETE FUNCTION ###
+        """
+        deletes a leaf from the tree and returns the number of rebalalancing opps that had been done to fix the tree after the deletion
+
+        @type nodeToBeDeleted: AVL node
+        @param nodeToBeDeleted: A leaf which will be deleted from the tree
+        @rtype: int
+        @returns: the number of rebalancing operation due to AVL rebalancing
+        @complexity: O(logn)
+        """
 
         def deleteLeaf(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
@@ -416,6 +426,17 @@ class AVLTreeList(object):
             nodeToBeDeleted.setParent(None)
             numOfBalancingOpps = self.fixTreeAfterDeletionAndJoin(parent)
             return numOfBalancingOpps
+
+        """
+        deletes a node from the tree which has only right child by bypassing it and returns the number 
+        of rebalalancing opps that had been done to fix the tree after the deletion
+
+        @type nodeToBeDeleted: AVL node
+        @param nodeToBeDeleted: A node which has only right child and will be deleted from the tree
+        @rtype: int
+        @returns: the number of rebalancing operation due to AVL rebalancing
+        @complexity: O(logn)
+        """
 
         def deleteNodeWithRightChildOnly(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
@@ -433,6 +454,17 @@ class AVLTreeList(object):
             nodeToBeDeleted.setRight(None)
             numOfBalancingOpps = self.fixTreeAfterDeletionAndJoin(parent)
             return numOfBalancingOpps
+
+        """
+        deletes a node from the tree which has only left child by bypassing it and returns the number 
+        of rebalalancing opps that had been done to fix the tree after the deletion
+
+        @type nodeToBeDeleted: AVL node
+        @param nodeToBeDeleted: A node which has only left child and will be deleted from the tree
+        @rtype: int
+        @returns: the number of rebalancing operation due to AVL rebalancing
+        @complexity: O(logn)
+        """
 
         def deleteNodeWithLeftChildOnly(nodeToBeDeleted):
             parent = nodeToBeDeleted.getParent()
@@ -464,7 +496,7 @@ class AVLTreeList(object):
             self.lastItem = None
             return 0
 
-        if i == 0:  # updating first becaus deleting the first item in the list
+        if i == 0:  # updating first because deleting the first item in the list
             self.firstItem = self.getSuccessorOf(nodeToBeDeleted)
 
         if i == self.length() - 1:  # updating last because deleting the last item in the list
@@ -514,6 +546,7 @@ class AVLTreeList(object):
 
 	@rtype: str
 	@returns: the value of the first item, None if the list is empty
+    @complexity: O(1)
 	"""
 
     def first(self):
@@ -525,6 +558,7 @@ class AVLTreeList(object):
 
 	@rtype: str
 	@returns: the value of the last item, None if the list is empty
+    @complexity: O(1)
 	"""
 
     def last(self):
@@ -536,30 +570,27 @@ class AVLTreeList(object):
 
 	@rtype: list
 	@returns: a list of strings representing the data structure
+    @complexity: O(n)
 	"""
 
     def listToArray(self):
-        # enveloped recursive function
-        def envList2Arr(node, lst):
-            if (not node.getRight().isRealNode()) and (not node.getLeft().isRealNode()):
-                lst.append(node.getValue())
-                return lst
-            else:
-                if node.getLeft().isRealNode():
-                    envList2Arr(node.getLeft(), lst)
-                lst.append(node.getValue())
-                if node.getRight().isRealNode():
-                    envList2Arr(node.getRight(), lst)
-            return lst
-        res = list()
+        def recList2Arr(node, res):
+            if node.isRealNode():
+                recList2Arr(node.getLeft(), res)
+                res.append(node.getValue())
+                recList2Arr(node.getRight(), res)
+
+        res = []
         if self.empty():
             return res
-        return envList2Arr(self.getRoot(), res)
+        recList2Arr(self.getRoot(), res)
+        return res
 
     """returns the size of the list
 
 	@rtype: int
 	@returns: the size of the list
+    @complexity: O(1)
 	"""
 
     def length(self):
@@ -669,6 +700,7 @@ class AVLTreeList(object):
 
 	@rtype: AVLNode
 	@returns: the root, None if the list is empty
+    @complexity: O(1)
 	"""
 
     def getRoot(self):
@@ -695,7 +727,7 @@ class AVLTreeList(object):
         curr = self.findSmallestSubTreeOfSize(i)
         r = curr.getLeft().getSize() + 1
         while (i != r):
-            if i < r:               # the node is in the left tree so we need to loof for the i'th smallest node in the left tree
+            if i < r:               # the node is in the left tree so we need to look for the i'th smallest node in the left tree
                 curr = curr.getLeft()
 
             # the node is in the right tree so we need to look for the (i-r)'th smallest node in the right tree
@@ -749,7 +781,7 @@ class AVLTreeList(object):
     @type node: AVLNode
 	@rtype: AVLNode
 	@returns: the predecessor of a given node. if the node is the minimum returns None
-    complexity: O(logn)
+    @complexity: O(logn)
 	"""
 
     def getPredecessorOf(self, node):
@@ -766,9 +798,11 @@ class AVLTreeList(object):
             curr = curr.getParent
         return curr
 
-    """updating the size of all the nodes which are in the path from node to the root
+    """
+    updating the size of all the nodes which are in the path from node to the root
 
-         @type node: AVLNode
+    @type node: AVLNode
+    @complexity: O(logn)
     """
 
     def updateSizeAllTheWayUpFrom(self, node):
@@ -778,9 +812,10 @@ class AVLTreeList(object):
 
     """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+    @complexity: O(1)
 	"""
 
-    def rightRotation(self, node):  # not handling the root problem yet
+    def rightRotation(self, node):
         B = node
         parent = B.getParent()
         A = B.getLeft()
@@ -807,6 +842,7 @@ class AVLTreeList(object):
 
     """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
+    @complexity: O(1)
 	"""
 
     def leftRotation(self, node):
@@ -833,7 +869,16 @@ class AVLTreeList(object):
         A.updateSize()
 
     """
-    need to add documantation
+    travels from the parrent of the delted node or the parent of the connector to tree's root, 
+    while looking for criminal AVL subtrees and handling the criminals by preforming the rotations needed.
+    for every node in the path to the root, it updates its size and height, if needed.
+    returns the number of rebalancing operation due to AVL rebalancing.
+    
+    @type node: AVLNode
+    @param node: the parent of the deleted node ot the parent of the connector
+    @rtype: int
+    @returns: the number of rebalancing operation due to AVL rebalancing.
+    @complexity: O(logn)
     """
 
     def fixTreeAfterDeletionAndJoin(self, node):
@@ -876,15 +921,25 @@ class AVLTreeList(object):
 
         return numOfBalancingOpps
 
+    """
+    inserts val at the end of the list
+
+	@param val: the value we insert to the end of the list
+	@rtype: int
+	@returns: the number of rebalancing operation due to AVL rebalancing
+    @complexity: O(logn)
+    """
+
     def append(self, val):
         return self.insert(self.length(), val)
 
     """merges two AVL trees
-    @type L1: AVL tree
+
     @type connector: AVL node
     @type L2: AVL tree
-    @pre L1 < connector < L2
-    @pre connector.isRealNode()"""
+    @pre connector.isRealNode()
+    @complexity: O(abs(self.getTreeHeight() - L2.getTreeHeight()) + 1)
+    """
 
     def join(self, connector, L2):
         if L2.empty():
