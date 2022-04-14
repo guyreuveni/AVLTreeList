@@ -733,12 +733,12 @@ class AVLTreeList(object):
             return None
 
         if node.getRight().isRealNode():
-            curr = node.getRight()
-            while curr.getLeft().isRealNode():
-                curr = curr.getLeft()
-            return curr
+            subTree = AVLTreeList()
+            subTree.root = node.getRight()
+            return subTree.findMin()
 
         curr = node.getParent()
+        # breaks when turning right for the first time
         while (curr != None) and (curr.getRight() == node):
             node = curr
             curr = curr.getParent()
@@ -756,16 +756,15 @@ class AVLTreeList(object):
         if node == self.firstItem:
             return None
         if node.getLeft().isRealNode():
-            curr = node.getLeft()
-            while curr.getRight().isRealNode():
-                curr = curr.getRight()
-            return curr
-        else:
-            curr = node
-            # while current node isn't the right son of his parent
-            while(curr != curr.getParent().getRight()):
-                curr = curr.getParent
-            return curr.getParent()
+            subTree = AVLTreeList()
+            subTree.root = node.getLeft()
+            return subTree.findMax()
+
+        curr = node.getParent()
+        # breaks when turning left for the first time
+        while (curr != None) and (curr.getLeft() == node):
+            curr = curr.getParent
+        return curr
 
     """updating the size of all the nodes which are in the path from node to the root
 
@@ -895,12 +894,12 @@ class AVLTreeList(object):
             L2.insert(0, connector.getValue())
             self.firstItem = L2.firstItem
             self.lastItem = L2.lastItem
-            self.root = L2.root
+            self.root = L2.getRoot()
             return
 
         elif self.getRoot().getHeight() == L2.getRoot().getHeight():
-            connector.completeSetLeft(self.root)
-            connector.completeSetRight(L2.root)
+            connector.completeSetLeft(self.getRoot())
+            connector.completeSetRight(L2.getRoot())
             connector.setParent(None)
             self.root = connector
 
@@ -925,7 +924,7 @@ class AVLTreeList(object):
         self.lastItem = L2.lastItem
         connector.updateSize()
         connector.updateHeight()
-        if self.root != connector:
+        if self.getRoot() != connector:
             self.fixTreeAfterDeletionAndJoin(connector.getParent())
 
     """
