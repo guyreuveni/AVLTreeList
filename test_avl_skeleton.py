@@ -1,4 +1,3 @@
-from audioop import lin2adpcm
 import unittest
 from avl_skeleton import AVLTreeList
 
