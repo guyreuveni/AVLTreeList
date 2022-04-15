@@ -412,6 +412,7 @@ class AVLTreeList(object):
 
         @type nodeToBeDeleted: AVL node
         @param nodeToBeDeleted: A leaf which will be deleted from the tree
+        @pre: nodeToBeDeleted is not the root.
         @rtype: int
         @returns: the number of rebalancing operation due to AVL rebalancing
         @complexity: O(logn)
@@ -488,13 +489,13 @@ class AVLTreeList(object):
         if i < 0 or i >= self.length():
             return -1
 
-        nodeToBeDeleted = self.treeSelect(i+1)
-
         if self.length() == 1:  # there is only one item in the list and we are deleting it
             self.root = None
             self.firstItem = None
             self.lastItem = None
             return 0
+
+        nodeToBeDeleted = self.treeSelect(i+1)
 
         if i == 0:  # updating first because deleting the first item in the list
             self.firstItem = self.getSuccessorOf(nodeToBeDeleted)
@@ -506,41 +507,41 @@ class AVLTreeList(object):
             numOfBalancingOpps = deleteLeaf(nodeToBeDeleted)
             return numOfBalancingOpps
 
-        elif not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
+        if not nodeToBeDeleted.getLeft().isRealNode():  # the node has only right child
             numOfBalancingOpps = deleteNodeWithRightChildOnly(nodeToBeDeleted)
             return numOfBalancingOpps
 
-        elif not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
+        if not nodeToBeDeleted.getRight().isRealNode():  # the node has only left child
             numOfBalancingOpps = deleteNodeWithLeftChildOnly(nodeToBeDeleted)
             return numOfBalancingOpps
 
-        else:  # the node has two children
-            successor = self.getSuccessorOf(nodeToBeDeleted)
-            if successor.size == 1:
-                numOfBalancingOpps = deleteLeaf(successor)
-            else:
-                numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
+        # the node has two children
+        successor = self.getSuccessorOf(nodeToBeDeleted)
+        if successor.size == 1:
+            numOfBalancingOpps = deleteLeaf(successor)
+        else:  # the successor doesn't have a left son.
+            numOfBalancingOpps = deleteNodeWithRightChildOnly(successor)
 
-            # putting the successor in nodeToBeDeleted place
-            parent = nodeToBeDeleted.getParent()
-            leftChild = nodeToBeDeleted.getLeft()
-            rightChild = nodeToBeDeleted.getRight()
-            if parent != None:  # if nodeToBeDeleted is the root then parent == None
-                if parent.getLeft() == nodeToBeDeleted:
-                    parent.setLeft(successor)
-                else:
-                    parent.setRight(successor)
+        # putting the successor in nodeToBeDeleted place
+        parent = nodeToBeDeleted.getParent()
+        leftChild = nodeToBeDeleted.getLeft()
+        rightChild = nodeToBeDeleted.getRight()
+        if parent != None:  # if nodeToBeDeleted is the root then parent == None
+            if parent.getLeft() == nodeToBeDeleted:
+                parent.setLeft(successor)
             else:
-                self.root = successor
-            successor.setParent(parent)
-            successor.completeSetLeft(leftChild)
-            successor.completeSetRight(rightChild)
-            successor.updateHeight()
-            successor.updateSize()
-            nodeToBeDeleted.setLeft(None)
-            nodeToBeDeleted.setRight(None)
-            nodeToBeDeleted.setParent(None)
-            return numOfBalancingOpps
+                parent.setRight(successor)
+        else:
+            self.root = successor
+        successor.setParent(parent)
+        successor.completeSetLeft(leftChild)
+        successor.completeSetRight(rightChild)
+        successor.updateHeight()
+        successor.updateSize()
+        nodeToBeDeleted.setLeft(None)
+        nodeToBeDeleted.setRight(None)
+        nodeToBeDeleted.setParent(None)
+        return numOfBalancingOpps
 
     """returns the value of the first item in the list
 
@@ -611,11 +612,11 @@ class AVLTreeList(object):
 
     def split(self, i):
         splitter = self.treeSelect(i+1)
-        T1 = AVLTreeList()
-        T1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
+        L1 = AVLTreeList()
+        L1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
         splitter.getLeft().setParent(None)
-        T2 = AVLTreeList()
-        T2.root = splitter.getRight() if splitter.getRight().isRealNode() else None
+        L2 = AVLTreeList()
+        L2.root = splitter.getRight() if splitter.getRight().isRealNode() else None
         splitter.getRight().setParent(None)
 
         prev = splitter
@@ -628,34 +629,34 @@ class AVLTreeList(object):
                 rightTree = AVLTreeList()
                 rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
                 curr.getRight().setParent(None)
-                T2.join(curr, rightTree)
+                L2.join(curr, rightTree)
             if curr.getRight() == prev:  # if we went up-left
                 leftTree = AVLTreeList()
                 leftTree.root = curr.getLeft() if curr.getLeft().isRealNode() else None
                 curr.getLeft().setParent(None)
-                leftTree.join(curr, T1)
-                T1 = leftTree
+                leftTree.join(curr, L1)
+                L1 = leftTree
             prev = curr
             curr = parent
 
-        if not T1.empty():
-            T1.firstItem = self.firstItem
-            T1.lastItem = T1.findMax()
+        if not L1.empty():
+            L1.firstItem = self.firstItem
+            L1.lastItem = L1.findMax()
         else:
-            T1.firstItem = None
-            T1.lastItem = None
-        if not T2.empty():
-            T2.lastItem = self.lastItem
-            T2.firstItem = T2.findMin()
+            L1.firstItem = None
+            L1.lastItem = None
+        if not L2.empty():
+            L2.lastItem = self.lastItem
+            L2.firstItem = L2.findMin()
         else:
-            T2.lastItem = None
-            T2.firstItem = None
+            L2.lastItem = None
+            L2.firstItem = None
 
         self.root = None
         self.firstItem = None
         self.lastItem = None
 
-        return [T1, splitter.getValue(), T2]
+        return [L1, splitter.getValue(), L2]
 
     """concatenates lst to self
 
@@ -876,10 +877,10 @@ class AVLTreeList(object):
     returns the number of rebalancing operation due to AVL rebalancing.
     
     @type node: AVLNode
-    @param node: the parent of the deleted node ot the parent of the connector
+    @param node: the parent of the deleted node or the parent of the connector
     @rtype: int
     @returns: the number of rebalancing operation due to AVL rebalancing.
-    @complexity: O(logn)
+    @complexity: O(h1 - h2 + 1) = O(logn) when h1 is the tree height and h2 is the height of node.
     """
 
     def fixTreeAfterDeletionAndJoin(self, node):
