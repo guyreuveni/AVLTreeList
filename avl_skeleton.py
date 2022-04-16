@@ -611,6 +611,11 @@ class AVLTreeList(object):
 	"""
 
     def split(self, i):
+        print("new tree")
+        maxx = 0
+        num_of_joins = 0
+        mutual_cost = 0
+
         splitter = self.treeSelect(i+1)
         L1 = AVLTreeList()
         L1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
@@ -625,15 +630,26 @@ class AVLTreeList(object):
         while curr != None:
             parent = curr.getParent()
             curr.setParent(None)
+            num_of_joins += 1
             if curr.getLeft() == prev:  # if we went up-right
                 rightTree = AVLTreeList()
                 rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
                 curr.getRight().setParent(None)
+                cost = abs(L2.getTreeHeight() - rightTree.getTreeHeight())
+                if cost > maxx:
+                    maxx = cost
+                mutual_cost += cost
+                print("the cost is :" + str(cost))
                 L2.join(curr, rightTree)
             if curr.getRight() == prev:  # if we went up-left
                 leftTree = AVLTreeList()
                 leftTree.root = curr.getLeft() if curr.getLeft().isRealNode() else None
                 curr.getLeft().setParent(None)
+                cost = abs(L1.getTreeHeight() - leftTree.getTreeHeight())
+                if cost > maxx:
+                    maxx = cost
+                mutual_cost += cost
+                print("the cost is :" + str(cost))
                 leftTree.join(curr, L1)
                 L1 = leftTree
             prev = curr
@@ -656,7 +672,8 @@ class AVLTreeList(object):
         self.firstItem = None
         self.lastItem = None
 
-        return [L1, splitter.getValue(), L2]
+        avg = (mutual_cost)/(num_of_joins)
+        return [L1, splitter.getValue(), L2, maxx, avg]
 
     """concatenates lst to self
 
