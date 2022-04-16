@@ -1,4 +1,5 @@
 from avl_skeleton import AVLTreeList
+from not_avl import TreeList
 import random
 
 
@@ -86,4 +87,125 @@ def count_joins():
         print("")
 
 
-count_deletetion_and_insertions()
+def insert_at_start():
+    for i in range(1, 11):
+        avl_balance_cnt = 0
+        regular_balance_cnt = 0
+        avl_depth_cnt = 0
+        regular_depth_cnt = 0
+        avl = AVLTreeList()
+        regular = TreeList()
+
+        n = 1000*i
+
+        for j in range(n):
+            avl_add_balnce, avl_add_depth = avl.insert(0, 17)
+            avl_balance_cnt += avl_add_balnce
+            avl_depth_cnt += avl_add_depth
+            reg_add_balnce, reg_add_depth = regular.insert(0, 17)
+            regular_balance_cnt += reg_add_balnce
+            regular_depth_cnt += reg_add_depth
+
+        avl_avg_balance = avl_balance_cnt/n
+        avl_avg_depth = avl_depth_cnt/n
+
+        reg_avg_balance = regular_balance_cnt/n
+        reg_avg_depth = regular_depth_cnt/n
+
+        print("for i = " + str(i))
+        print("balancig operations avarage for avl is: " + str(avl_avg_balance))
+        print("balancig operations avarage for regular is: " + str(reg_avg_balance))
+        print("")
+        print("avarge depth for avl is: " + str(avl_avg_depth))
+        print("avarge depth for regular is: " + str(reg_avg_depth))
+        print("")
+        print("")
+
+
+def indices():
+    i = 2
+    while True:
+        for j in range(i):
+            if j % 2 == 0:
+                yield j
+        i = i * 2
+
+
+def insert_balance_tree():
+    for i in range(1, 11):
+        avl_balance_cnt = 0
+        regular_balance_cnt = 0
+        avl_depth_cnt = 0
+        regular_depth_cnt = 0
+        avl = AVLTreeList()
+        regular = TreeList()
+
+        n = 1000*i
+
+        gen = indices()
+
+        cnt = 0
+
+        while cnt < n:
+            index = next(gen)
+            avl_add_balnce, avl_add_depth = avl.insert(index, 17)
+            avl_balance_cnt += avl_add_balnce
+            avl_depth_cnt += avl_add_depth
+            reg_add_balnce, reg_add_depth = regular.insert(index, 17)
+            regular_balance_cnt += reg_add_balnce
+            regular_depth_cnt += reg_add_depth
+            cnt += 1
+
+        avl_avg_balance = avl_balance_cnt/n
+        avl_avg_depth = avl_depth_cnt/n
+
+        reg_avg_balance = regular_balance_cnt/n
+        reg_avg_depth = regular_depth_cnt/n
+
+        print("for i = " + str(i))
+        print("balancig operations avarage for avl is: " + str(avl_avg_balance))
+        print("balancig operations avarage for regular is: " + str(reg_avg_balance))
+        print("")
+        print("avarge depth for avl is: " + str(avl_avg_depth))
+        print("avarge depth for regular is: " + str(reg_avg_depth))
+        print("")
+        print("")
+
+
+def insert_random():
+    for i in range(1, 11):
+        avl_balance_cnt = 0
+        regular_balance_cnt = 0
+        avl_depth_cnt = 0
+        regular_depth_cnt = 0
+        avl = AVLTreeList()
+        regular = TreeList()
+
+        n = 100000*i
+
+        for j in range(n):
+            index = random.randint(0, avl.length())
+            avl_add_balnce, avl_add_depth = avl.insert(index, 17)
+            avl_balance_cnt += avl_add_balnce
+            avl_depth_cnt += avl_add_depth
+            reg_add_balnce, reg_add_depth = regular.insert(index, 17)
+            regular_balance_cnt += reg_add_balnce
+            regular_depth_cnt += reg_add_depth
+
+        avl_avg_balance = avl_balance_cnt/n
+        avl_avg_depth = avl_depth_cnt/n
+
+        reg_avg_balance = regular_balance_cnt/n
+        reg_avg_depth = regular_depth_cnt/n
+
+        print("for i = " + str(i))
+        print("balancig operations avarage for avl is: " + str(avl_avg_balance))
+        print("balancig operations avarage for regular is: " + str(reg_avg_balance))
+        print("")
+        print("avarge depth for avl is: " + str(avl_avg_depth))
+        print("avarge depth for regular is: " + str(reg_avg_depth))
+        print("")
+        print("")
+
+
+insert_random()

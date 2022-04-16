@@ -210,7 +210,7 @@ A class implementing the ADT list, using an AVL tree.
 """
 
 
-class AVLTreeList(object):
+class TreeList(object):
 
     """
     Constructor, you are allowed to add more fields.
@@ -293,16 +293,22 @@ class AVLTreeList(object):
                 prevHeight = curr.getHeight()
                 curr.updateHeight()
 
-                if abs(curr.getBf()) < 2:
-                    if prevHeight == curr.getHeight():
-                        return (curr, numOfBalancingOp, depth)
-                    else:
-                        curr = curr.getParent()
-                        numOfBalancingOp += 1
+                # if abs(curr.getBf()) < 2:
+                #     if prevHeight == curr.getHeight():
+                #         return (curr, numOfBalancingOp)
+                #     else:
+                #         curr = curr.getParent()
+                #         numOfBalancingOp += 1
 
-                else:
-                    numOfBalancingOp += insertRotate(curr)
+                # else:
+                #     numOfBalancingOp += insertRotate(curr)
+                #     return (curr, numOfBalancingOp)
+
+                if prevHeight == curr.getHeight():
                     return (curr, numOfBalancingOp, depth)
+                else:
+                    numOfBalancingOp += 1
+                    curr = curr.getParent()
 
             return (curr, numOfBalancingOp, depth)
 
@@ -786,7 +792,7 @@ class AVLTreeList(object):
             return None
 
         if node.getRight().isRealNode():
-            subTree = AVLTreeList()
+            subTree = TreeList()
             subTree.root = node.getRight()
             return subTree.findMin()
 
@@ -809,7 +815,7 @@ class AVLTreeList(object):
         if node == self.firstItem:
             return None
         if node.getLeft().isRealNode():
-            subTree = AVLTreeList()
+            subTree = TreeList()
             subTree.root = node.getLeft()
             return subTree.findMax()
 
