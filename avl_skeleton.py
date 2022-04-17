@@ -640,13 +640,13 @@ class AVLTreeList(object):
             curr = parent
 
         if not L1.empty():
-            L1.firstItem = self.firstItem
+            L1.firstItem = L1.findMin()
             L1.lastItem = L1.findMax()
         else:
             L1.firstItem = None
             L1.lastItem = None
         if not L2.empty():
-            L2.lastItem = self.lastItem
+            L2.lastItem = L2.findMax()
             L2.firstItem = L2.findMin()
         else:
             L2.lastItem = None
