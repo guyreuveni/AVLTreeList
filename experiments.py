@@ -121,6 +121,19 @@ def insert_at_start():
         print("")
         print("")
 
+        cnt = [0]
+
+        def fibo(node, cnt):
+            if node.isRealNode():
+                fibo(node.getLeft(), cnt)
+                if node.getBf() != 1 and (node.getLeft().isRealNode() or node.getRight().isRealNode()):
+                    cnt[0] += 1
+                fibo(node.getRight(), cnt)
+
+        fibo(avl.getRoot(), cnt)
+
+        print("not fibo nodes are: " + str(cnt[0]/n))
+
 
 def indices():
     i = 2
@@ -208,4 +221,4 @@ def insert_random():
         print("")
 
 
-insert_random()
+insert_at_start()
