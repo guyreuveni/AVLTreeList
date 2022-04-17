@@ -10,6 +10,7 @@ def append(self, val):
 2. YOU NEED TO HAVE FIELDS POINTING TO FIRST AND LAST NODE IN THE TREE REPRESENTING THE LIST. 
 NAME THEM firstItem and lastItem OR ALTERNATIVELY CHANGE THE TEST ITSELF TO FIT WITH THE NAMES
 OF THESE FIELDS AT YOUR IMPLEMENTATION. 
+3. YOU NEED TO HAVE A METHOD THAT RETURNS THE TREE HEIGHT AND NAME IT 'getTreeHeight'
 """
 
 
@@ -24,7 +25,7 @@ class testAVLList(unittest.TestCase):
         twentyTree.append(i)
 
     def in_order(self, tree, node, func):
-        if node != None:
+        if node is not None:
             if node.isRealNode():
                 self.in_order(tree, node.getLeft(), func)
                 func(node, tree)
@@ -197,6 +198,8 @@ class testAVLList(unittest.TestCase):
         self.assertIsNone(T.getRoot())
         self.assertIsNone(T.firstItem)
         self.assertIsNone(T.lastItem)
+        self.assertIsNone(T.first())
+        self.assertIsNone(T.last())
 
     def test_delete_from_list_with_two_elements(self):
         T1 = AVLTreeList()
@@ -483,8 +486,9 @@ class testAVLList(unittest.TestCase):
             T3.insert(0, i)
 
         for i in range(49):
-            T3.delete(i//2)
-            self.in_order(T3, T3.getRoot(), self.check_family)
+            if i//2 < T3.length():
+                T3.delete(i//2)
+                self.in_order(T3, T3.getRoot(), self.check_family)
 
     def test_family_after_insertion_alternatly(self):
         T5 = AVLTreeList()
@@ -598,8 +602,9 @@ class testAVLList(unittest.TestCase):
             T3.insert(0, i)
 
         for i in range(49):
-            T3.delete(i//2)
-            self.in_order(T3, T3.getRoot(), self.check_size)
+            if i//2 < T3.length():
+                T3.delete(i//2)
+                self.in_order(T3, T3.getRoot(), self.check_size)
 
     def test_size_after_insertion_alternatly(self):
         T5 = AVLTreeList()
@@ -713,8 +718,9 @@ class testAVLList(unittest.TestCase):
             T3.insert(0, i)
 
         for i in range(49):
-            T3.delete(i//2)
-            self.in_order(T3, T3.getRoot(), self.check_height)
+            if i//2 < T3.length():
+                T3.delete(i//2)
+                self.in_order(T3, T3.getRoot(), self.check_height)
 
     def test_height_after_insertion_alternatly(self):
         T5 = AVLTreeList()
@@ -778,7 +784,8 @@ class testAVLList(unittest.TestCase):
     ### TESTING BALACNE FACTOR ###
 
     def check_BF(self, node, tree):
-        self.assertTrue(abs(node.getBf()) < 2)
+        self.assertTrue(abs(node.getLeft().getHeight() -
+                            node.getRight().getHeight()) < 2)
 
     def test_BF_after_insertion_at_start(self):
         T2 = AVLTreeList()
@@ -827,8 +834,9 @@ class testAVLList(unittest.TestCase):
             T3.insert(0, i)
 
         for i in range(49):
-            T3.delete(i//2)
-            self.in_order(T3, T3.getRoot(), self.check_BF)
+            if i//2 < T3.length():
+                T3.delete(i//2)
+                self.in_order(T3, T3.getRoot(), self.check_BF)
 
     def test_BF_after_insertion_alternatly(self):
         T5 = AVLTreeList()
@@ -1212,7 +1220,7 @@ class testAVLList(unittest.TestCase):
             T2.append(i)
 
         self.assertEqual(T1.concat(T3), 2)
-        self.assertEquals(T4.concat(T2), 2)
+        self.assertEqual(T4.concat(T2), 2)
 
     def test_assert_height_difference_non_empty_lists(self):
         T1 = AVLTreeList()
@@ -1406,3 +1414,7 @@ class testAVLList(unittest.TestCase):
             T.getRoot().getRight()), None)
         self.assertEqual(T.getPredecessorOf(
             T.getRoot().getRight()).getValue(), 0)
+
+
+if __name__ == '__main__':
+    unittest.main()
