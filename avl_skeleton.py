@@ -204,6 +204,14 @@ class AVLNode(object):
             return False
         return True
 
+    def getDepth(self):
+        depth = 0
+        node = self.getParent()
+        while node != None:
+            depth += 1
+            node = node.getParent()
+        return depth
+
 
 """
 A class implementing the ADT list, using an AVL tree.
@@ -285,26 +293,24 @@ class AVLTreeList(object):
             node.updateSize()
             curr = node.getParent()
             numOfBalancingOp = 0
-            depth = 0
 
             while curr != None:
-                depth += 1
                 curr.updateSize()
                 prevHeight = curr.getHeight()
                 curr.updateHeight()
 
                 if abs(curr.getBf()) < 2:
                     if prevHeight == curr.getHeight():
-                        return (curr, numOfBalancingOp, depth)
+                        return (curr, numOfBalancingOp)
                     else:
                         curr = curr.getParent()
                         numOfBalancingOp += 1
 
                 else:
                     numOfBalancingOp += insertRotate(curr)
-                    return (curr, numOfBalancingOp, depth)
+                    return (curr, numOfBalancingOp)
 
-            return (curr, numOfBalancingOp, depth)
+            return (curr, numOfBalancingOp)
 
         """inserts node as a leaf without making any height or size adjustments.
         the adjustments will be done in main insert function
@@ -390,9 +396,10 @@ class AVLTreeList(object):
             else:
                 insertLeaf(self.getPredecessorOf(curr), newNode, "right")
 
-        curr, numOfBalancingOp, depth = fixAfterInsertion(newNode)
+        depth = newNode.getDepth()
+        curr, numOfBalancingOp = fixAfterInsertion(newNode)
         if curr != None:
-            depth += self.updateSizeAllTheWayUpFrom(curr.getParent())
+            self.updateSizeAllTheWayUpFrom(curr.getParent())
 
         return numOfBalancingOp, depth
 
@@ -827,12 +834,9 @@ class AVLTreeList(object):
     """
 
     def updateSizeAllTheWayUpFrom(self, node):
-        depth = 0
         while (node != None):
-            depth += 1
             node.updateSize()
             node = node.getParent()
-        return depth
 
     """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved

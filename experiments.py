@@ -183,7 +183,7 @@ def insert_random():
         avl = AVLTreeList()
         regular = TreeList()
 
-        n = 100000*i
+        n = 1000*i
 
         for j in range(n):
             index = random.randint(0, avl.length())
@@ -210,4 +210,17 @@ def insert_random():
         print("")
 
 
-insert_at_start()
+def trial():
+    T = AVLTreeList()
+    depth_cnt = 0
+    for i in range(7):
+        res = T.insert(0, i)
+        # T.printt()
+        depth_cnt += res[1]
+        print(res[1])
+
+    avg = depth_cnt/7
+    print("the avg depth is " + str(avg))
+
+
+insert_balance_tree()
