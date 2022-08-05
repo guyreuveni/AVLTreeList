@@ -1,8 +1,4 @@
-# username - guyreuveni
-# id1      - 206484750
-# name1    - Guy Reuveni
-# id2      - 206388969
-# name2    - Ofek Kasif
+
 
 """A class represnting a node in an AVL tree"""
 
