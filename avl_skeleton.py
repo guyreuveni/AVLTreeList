@@ -1,10 +1,8 @@
-
-
 """A class represnting a node in an AVL tree"""
 
 
 class AVLNode(object):
-    """Constructor, you are allowed to add more fields.
+    """Constructor.
 
     @type value: str
     @param value: data of your node
@@ -12,12 +10,20 @@ class AVLNode(object):
     """
 
     def __init__(self, value=None):
-        self.value = value
+        if value is None:
+            self.value = value
+        else:
+            self.value = int(value)
         self.left = None
         self.right = None
         self.parent = None
         self.height = -1
         self.size = 0
+        if value is None:
+            self.max = -float("inf")
+        else:
+            self.max = value
+        self.color = 0
 
     """returns the left child
 	@rtype: AVLNode
@@ -88,6 +94,17 @@ class AVLNode(object):
 
     def getBf(self):
         return self.left.getHeight() - self.right.getHeight()
+
+    """returns the max value in rooted sub-tree
+
+    @pre: self is a real node
+	@rtype: int
+	@returns: the max value in rooted sub-tree
+    @ complexity: O(1)
+	"""
+
+    def getMax(self):
+        return self.max
 
     """sets left child
 
@@ -166,8 +183,18 @@ class AVLNode(object):
     @complexity: O(1)
 	"""
 
-    def setSize(self, size):  # Guy added this method
+    def setSize(self, size):
         self.size = size
+
+    """sets the max field of the node
+
+	@type maxx: int
+	@param maxx: the max value in the sub-tree
+    @complexity: O(1)
+	"""
+
+    def setMax(self, maxx):
+        self.max = maxx
 
     """
     updates node height by computing it from childrens' height 
@@ -176,8 +203,7 @@ class AVLNode(object):
     """
 
     def updateHeight(self):
-        self.setHeight(max(self.getRight().getHeight(),
-                           self.getLeft().getHeight()) + 1)
+        self.setHeight(max(self.getRight().getHeight(), self.getLeft().getHeight()) + 1)
 
     """
     updates node size by computing it from childrens' size
@@ -187,6 +213,15 @@ class AVLNode(object):
 
     def updateSize(self):
         self.setSize(self.getRight().getSize() + self.getLeft().getSize() + 1)
+
+    """
+    updates node max by computing it from childrens' max
+
+    @complexity: O(1)
+    """
+
+    def updateMax(self):
+        self.max = max(self.value, self.getLeft().getMax(), self.getRight().getMax())
 
     """returns whether self is not a virtual node
 
@@ -209,7 +244,7 @@ A class implementing the ADT list, using an AVL tree.
 class AVLTreeList(object):
 
     """
-    Constructor, you are allowed to add more fields.
+    Constructor.
 
     Initializing the fields root, first and last to None
     @complexity: O(1)
@@ -247,7 +282,7 @@ class AVLTreeList(object):
         if i < 0 or i >= self.length():
             return None
         else:
-            return self.treeSelect(i+1).getValue()
+            return self.treeSelect(i + 1).getValue()
 
     """inserts val at position i in the list
 
@@ -262,7 +297,6 @@ class AVLTreeList(object):
 	"""
 
     def insert(self, i, val):
-
         ### DEFINING INNER-HELP METHODS FOR INSERT FUNCTION ###
         """travels from the inserted node to tree's root, while looking for criminal AVL subtree
         for every node checked, it updates it size and height.
@@ -279,6 +313,7 @@ class AVLTreeList(object):
         def fixAfterInsertion(node):
             node.updateHeight()
             node.updateSize()
+            node.updateMax()
             curr = node.getParent()
             numOfBalancingOp = 0
 
@@ -286,6 +321,7 @@ class AVLTreeList(object):
                 curr.updateSize()
                 prevHeight = curr.getHeight()
                 curr.updateHeight()
+                curr.updateMax()
 
                 if abs(curr.getBf()) < 2:
                     if prevHeight == curr.getHeight():
@@ -364,7 +400,9 @@ class AVLTreeList(object):
                 self.firstItem = newNode
 
             else:
-                if self.firstItem == None:  # handling "mikre katze" for split method which during its run the sub-trees don't have pointers to first and last
+                if (
+                    self.firstItem == None
+                ):  # handling "mikre katze" for split method which during its run the sub-trees don't have pointers to first and last
                     insertLeaf(self.findMin(), newNode, "left")
                 else:
                     insertLeaf(self.firstItem, newNode, "left")
@@ -378,7 +416,7 @@ class AVLTreeList(object):
                 self.lastItem = newNode
 
         else:
-            curr = self.treeSelect(i+1)
+            curr = self.treeSelect(i + 1)
             if not curr.getLeft().isRealNode():
                 insertLeaf(curr, newNode, "left")
             else:
@@ -386,7 +424,7 @@ class AVLTreeList(object):
 
         curr, numOfBalancingOp = fixAfterInsertion(newNode)
         if curr != None:
-            self.updateSizeAllTheWayUpFrom(curr.getParent())
+            self.updateSizeAndMaxAllTheWayUpFrom(curr.getParent())
 
         return numOfBalancingOp
 
@@ -401,7 +439,6 @@ class AVLTreeList(object):
 	"""
 
     def delete(self, i):
-
         ### DEFINING INNER-HELP METHODS FOR DELETE FUNCTION ###
         """
         deletes a leaf from the tree and returns the number of rebalalancing opps that had been done to fix the tree after the deletion
@@ -485,18 +522,22 @@ class AVLTreeList(object):
         if i < 0 or i >= self.length():
             return -1
 
-        if self.length() == 1:  # there is only one item in the list and we are deleting it
+        if (
+            self.length() == 1
+        ):  # there is only one item in the list and we are deleting it
             self.root = None
             self.firstItem = None
             self.lastItem = None
             return 0
 
-        nodeToBeDeleted = self.treeSelect(i+1)
+        nodeToBeDeleted = self.treeSelect(i + 1)
 
         if i == 0:  # updating first because deleting the first item in the list
             self.firstItem = self.getSuccessorOf(nodeToBeDeleted)
 
-        if i == self.length() - 1:  # updating last because deleting the last item in the list
+        if (
+            i == self.length() - 1
+        ):  # updating last because deleting the last item in the list
             self.lastItem = self.getPredecessorOf(nodeToBeDeleted)
 
         if nodeToBeDeleted.getSize() == 1:  # the node is a leaf
@@ -534,6 +575,7 @@ class AVLTreeList(object):
         successor.completeSetRight(rightChild)
         successor.updateHeight()
         successor.updateSize()
+        successor.updateMax()
         nodeToBeDeleted.setLeft(None)
         nodeToBeDeleted.setRight(None)
         nodeToBeDeleted.setParent(None)
@@ -607,7 +649,7 @@ class AVLTreeList(object):
 	"""
 
     def split(self, i):
-        splitter = self.treeSelect(i+1)
+        splitter = self.treeSelect(i + 1)
         L1 = AVLTreeList()
         L1.root = splitter.getLeft() if splitter.getLeft().isRealNode() else None
         splitter.getLeft().setParent(None)
@@ -623,7 +665,9 @@ class AVLTreeList(object):
             curr.setParent(None)
             if curr.getLeft() == prev:  # if we went up-right
                 rightTree = AVLTreeList()
-                rightTree.root = curr.getRight() if curr.getRight().isRealNode() else None
+                rightTree.root = (
+                    curr.getRight() if curr.getRight().isRealNode() else None
+                )
                 curr.getRight().setParent(None)
                 L2.join(curr, rightTree)
             if curr.getRight() == prev:  # if we went up-left
@@ -671,7 +715,7 @@ class AVLTreeList(object):
             self.root = lst.getRoot()
         else:
             connector = self.lastItem
-            self.delete(self.length()-1)
+            self.delete(self.length() - 1)
             self.join(connector, lst)
         return heightDifference
 
@@ -704,6 +748,42 @@ class AVLTreeList(object):
     def getRoot(self):
         return self.root
 
+    """returns the max in the range of i to j
+
+	@rtype: int
+    @complexity: O(logn)
+	"""
+
+    def getMaxInRange(self, i, j):
+        if i > j:
+            return -1
+        ith_node = self.treeSelect(i + 1)
+        if i == j:
+            return ith_node.getValue()
+        jth_node = self.treeSelect(j + 1)
+
+        lca = self.find_lca(ith_node, jth_node)
+
+        res = lca.getValue()
+
+        father = ith_node
+        son = ith_node.getLeft()
+        while father != lca:
+            if son == father.getLeft():
+                res = max(father.getValue(), father.getRight().getMax())
+            son = father
+            father = father.getParent()
+
+        father = jth_node
+        son = jth_node.getRight()
+        while father != lca:
+            if son == father.getRight():
+                res = max(father.getValue(), father.getLeft().getMax())
+            son = father
+            father = father.getParent()
+
+        return res
+
     ### SERVICE METHODS ###
 
     """returns the i'th smallest node in the tree
@@ -724,8 +804,10 @@ class AVLTreeList(object):
 
         curr = self.findSmallestSubTreeOfSize(i)
         r = curr.getLeft().getSize() + 1
-        while (i != r):
-            if i < r:               # the node is in the left tree so we need to look for the i'th smallest node in the left tree
+        while i != r:
+            if (
+                i < r
+            ):  # the node is in the left tree so we need to look for the i'th smallest node in the left tree
                 curr = curr.getLeft()
 
             # the node is in the right tree so we need to look for the (i-r)'th smallest node in the right tree
@@ -746,7 +828,7 @@ class AVLTreeList(object):
 
     def findSmallestSubTreeOfSize(self, k):
         curr = self.firstItem
-        while (curr.getSize() < k):
+        while curr.getSize() < k:
             curr = curr.getParent()
         return curr
 
@@ -797,15 +879,16 @@ class AVLTreeList(object):
         return curr
 
     """
-    updating the size of all the nodes which are in the path from node to the root
+    updating the size and max of all the nodes which are in the path from node to the root
 
     @type node: AVLNode
     @complexity: O(logn)
     """
 
-    def updateSizeAllTheWayUpFrom(self, node):
-        while (node != None):
+    def updateSizeAndMaxAllTheWayUpFrom(self, node):
+        while node != None:
             node.updateSize()
+            node.updateMax()
             node = node.getParent()
 
     """given that the node is an AVL criminal with BF = +2 and its left son has BF = +1,
@@ -838,6 +921,10 @@ class AVLTreeList(object):
         B.updateSize()
         A.updateSize()
 
+        # fixing max field off A and B, the only nodes whose max was changed
+        B.updateMax()
+        A.updateMax()
+
     """given that node is an AVL criminal with BF = -2 and its right son has BF = -1,
     fixes the Bf of node. furthermore, updating the height and size fields of the nodes involved
     @complexity: O(1)
@@ -866,6 +953,10 @@ class AVLTreeList(object):
         B.updateSize()
         A.updateSize()
 
+        # fixing max field off A and B, the only nodes whose max was changed
+        B.updateMax()
+        A.updateMax()
+
     """
     travels from the parrent of the delted node or the parent of the connector to tree's root, 
     while looking for criminal AVL subtrees and handling the criminals by preforming the rotations needed.
@@ -885,6 +976,7 @@ class AVLTreeList(object):
         while node != None:
             originalParent = node.getParent()
             node.updateSize()
+            node.updateMax()
             if not doneWithFixingHeight:
                 BF = node.getBf()
                 heightBefore = node.getHeight()
@@ -901,7 +993,7 @@ class AVLTreeList(object):
                         if BFL == 1 or BFL == 0:
                             self.rightRotation(node)
                             numOfBalancingOpps += 1
-                        elif BFL == - 1:
+                        elif BFL == -1:
                             self.leftRotation(node.getLeft())
                             self.rightRotation(node)
                             numOfBalancingOpps += 2
@@ -977,6 +1069,7 @@ class AVLTreeList(object):
         self.lastItem = L2.lastItem
         connector.updateSize()
         connector.updateHeight()
+        connector.updateMax()
         if self.getRoot() != connector:
             self.fixTreeAfterDeletionAndJoin(connector.getParent())
 
@@ -991,7 +1084,7 @@ class AVLTreeList(object):
         curr = self.getRoot()
         if curr == None:
             return None
-        while(curr.getRight().isRealNode()):
+        while curr.getRight().isRealNode():
             curr = curr.getRight()
         return curr
 
@@ -1006,9 +1099,26 @@ class AVLTreeList(object):
         curr = self.getRoot()
         if curr == None:
             return None
-        while (curr.getLeft().isRealNode()):
+        while curr.getLeft().isRealNode():
             curr = curr.getLeft()
         return curr
+
+    def find_lca(self, left_node, right_node):
+        left = left_node
+        while left is not None:
+            left.color = 1
+            left = left.getParent()
+
+        right = right_node
+        while right.color == 0:
+            right = right.getParent()
+
+        left = left_node
+        while left is not None:
+            left.color = 0
+            left = left.getParent()
+
+        return right
 
     def getTreeHeight(self):
         if self.empty():
@@ -1050,26 +1160,33 @@ class AVLTreeList(object):
         rwid = len(right[-1])
         rootwid = len(root)
 
-        result = [(lwid+1)*" " + root + (rwid+1)*" "]
+        result = [(lwid + 1) * " " + root + (rwid + 1) * " "]
 
         ls = self.leftspace(left[0])
         rs = self.rightspace(right[0])
-        result.append(ls*" " + (lwid-ls)*"_" + "/" + rootwid *
-                      " " + "\\" + rs*"_" + (rwid-rs)*" ")
+        result.append(
+            ls * " "
+            + (lwid - ls) * "_"
+            + "/"
+            + rootwid * " "
+            + "\\"
+            + rs * "_"
+            + (rwid - rs) * " "
+        )
 
         for i in range(max(len(left), len(right))):
             row = ""
             if i < len(left):
                 row += left[i]
             else:
-                row += lwid*" "
+                row += lwid * " "
 
-            row += (rootwid+2)*" "
+            row += (rootwid + 2) * " "
 
             if i < len(right):
                 row += right[i]
             else:
-                row += rwid*" "
+                row += rwid * " "
 
             result.append(row)
 
@@ -1079,10 +1196,10 @@ class AVLTreeList(object):
         """helper for conc"""
         # row is the first row of a left node
         # returns the index of where the second whitespace starts
-        i = len(row)-1
+        i = len(row) - 1
         while row[i] == " ":
             i -= 1
-        return i+1
+        return i + 1
 
     def rightspace(self, row):
         """helper for conc"""
